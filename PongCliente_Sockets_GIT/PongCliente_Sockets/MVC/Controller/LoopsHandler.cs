@@ -155,9 +155,14 @@ namespace PongCliente_Sockets
             StatusBoard statusBoard)
         {
             int dirX, dirY;
-            float speed = (float)ball.vector.Length();
 
-            //for (int i = 1; i <= speed; i++)
+            int maxX, maxY;
+            maxX = (int)ball.vector.x;
+            maxY = (int)ball.vector.y;
+
+            int i = 0; int j = 0;
+
+            while (i < maxX || j < maxY)
             {
                 HitboxHandler.handleHit(ref ball, ref WallBottom);
                 HitboxHandler.handleHit(ref ball, ref wallTop);
@@ -165,19 +170,28 @@ namespace PongCliente_Sockets
                 HitboxHandler.handleHit(ref ball, ref player2);
                 HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
 
-                // Does a little math trick to get +1 || -1 || 0 from the vector
-                dirX = (int)(ball.vector.x / Math.Abs(ball.vector.x));
-                dirY = (int)(ball.vector.y / Math.Abs(ball.vector.y));
+                if (i < maxX) 
+                {
 
-                if (dirX != -1 && dirX != 1) dirX = 0;
-                if (dirY != -1 && dirY != 1) dirY = 0;
+                    // Does a little math trick to get +1 || -1 || 0 from the vector
+                    dirX = (int)(ball.vector.x / Math.Abs(ball.vector.x));
+                    if (dirX != -1 && dirX != 1) dirX = 0;
+                    ball.pos.x += (dirX);
 
-                // Then it adds to the ball pos that number
-                ball.pos.x += (ball.vector.x);
-                ball.pos.y += (ball.vector.y);
+                    i++;
+                }
+
+                if (j < maxX)
+                { 
+
+                    // Does a little math trick to get +1 || -1 || 0 from the vector
+                    dirY = (int)(ball.vector.y / Math.Abs(ball.vector.y));
+                    if (dirY != -1 && dirY != 1) dirY = 0;
+                    ball.pos.y += (dirY);
+
+                    j++;
+                }
             }
-
-
             //throw new NotImplementedException();
         }
 
