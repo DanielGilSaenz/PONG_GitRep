@@ -55,6 +55,9 @@ namespace PongCliente_Sockets
 
         static void Main(string[] args)
         {
+            // GOTO Label
+            begining : 
+
             initPlayground();
 
             int selected = loopsHandler.menuLoop(menu, screenHandler);
@@ -71,11 +74,8 @@ namespace PongCliente_Sockets
                 loopsHandler.gameLoop(player1, player2, ball, topWall, bottomWall, statusBoard, screenHandler);
             }
 
-            // Option selected is "play"
-            if (selected == 3)
-            {
-                return;
-            }
+            if (selected == 1) goto begining;
+            if (selected == 3) return;
 
             // Wait 'till its over
             while (statusBoard.gameIsOver == false);

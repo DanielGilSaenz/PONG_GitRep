@@ -46,6 +46,7 @@
     <Compile Include="Async\FrameRate.cs" />
     <Compile Include="Async\Locks.cs" />
     <Compile Include="Interfaces\ICompareBool.cs" />
+    <Compile Include="MVC\Controller\HitboxHandler.cs" />
     <Compile Include="MVC\Model\Math Objects\fPoint.cs" />
     <Compile Include="MVC\Model\Math Objects\fVector.cs" />
     <Compile Include="Menus\Status.cs" />

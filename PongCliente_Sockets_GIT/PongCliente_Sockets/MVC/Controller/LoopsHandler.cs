@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PongCliente_Sockets.MVC.Controller;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -156,50 +157,13 @@ namespace PongCliente_Sockets
             int dirX, dirY;
             float speed = (float)ball.vector.Length();
 
-            for (float i = 0; i <= speed; i+=0.1f)
+            //for (int i = 1; i <= speed; i++)
             {
-                // Hit bottom wall
-                if (ball.pos.y >= WallBottom.line.p2.y - 1) { ball.vector.y *= -1; ball.Beep(); }
-
-                // Hit top wall
-                if (ball.pos.y <= wallTop.line.p2.y + 1) { ball.vector.y *= -1; ball.Beep(); }
-
-                // Hit player1 pos.y
-                if (ball.pos.x >= player1.pos.x - 1)
-                {
-                    // Checks if it has to bounce on the player
-                    if (!(ball.pos.y < player1.bottom.y || ball.pos.y > player1.top.y))
-                    {
-                        ball.vector.x *= -1;
-                        ball.Beep();
-                    }
-                }
-
-                // hit player2
-                if (ball.pos.x <= player2.pos.x + 1)
-                {
-                    // Checks if it has to bounce on the player
-                    if (!(ball.pos.y < player2.bottom.y || ball.pos.y > player2.top.y))
-                    {
-                        ball.vector.x *= -1;
-                        ball.Beep();
-                    }
-                }
-
-                // Passed Player1
-                if (ball.pos.x == player2.pos.x - 10)
-                {
-                    statusBoard.p1_Score++;
-                    ball.pos = fPoint.Cast(ScreenHandler.centerOfScreen);
-                }
-
-
-                // Passed Player2
-                if (ball.pos.x == player1.pos.x + 10)
-                {
-                    statusBoard.p2_Score++;
-                    ball.pos = fPoint.Cast(ScreenHandler.centerOfScreen);
-                }
+                HitboxHandler.handleHit(ref ball, ref WallBottom);
+                HitboxHandler.handleHit(ref ball, ref wallTop);
+                HitboxHandler.handleHit(ref ball, ref player1);
+                HitboxHandler.handleHit(ref ball, ref player2);
+                HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
 
                 // Does a little math trick to get +1 || -1 || 0 from the vector
                 dirX = (int)(ball.vector.x / Math.Abs(ball.vector.x));
@@ -209,8 +173,8 @@ namespace PongCliente_Sockets
                 if (dirY != -1 && dirY != 1) dirY = 0;
 
                 // Then it adds to the ball pos that number
-                ball.pos.x += (i * dirX);
-                ball.pos.y += (i * dirY);
+                ball.pos.x += (ball.vector.x);
+                ball.pos.y += (ball.vector.y);
             }
 
 
