@@ -38,9 +38,9 @@ namespace PongCliente_Sockets
             return y;
         }
 
-        public double getFromEcuation_X(int y, double m)
+        public int getFromEcuation_X(int y, double m)
         {
-            double x = (double)((y - p1.y + (m * p1.x)) / m);
+            int x = (int)((y - p1.y + (m * p1.x)) / m);
             return x;
         }
 

@@ -91,7 +91,7 @@ namespace PongCliente_Sockets
                 // Ball = new Ball new Coordinates
                 // Player = new Player new Coordinates
                 updatePlayerPos(ref keysBuffer, ref player1, ref player2);
-                updateBall(ref ball, ref frameRate, player1, player2, wallTop, wallBottom, statusBoard);
+                updateBall(ref ball, ref player1, ref player2, ref wallTop, ref wallBottom, ref statusBoard);
 
 
                 // Locks the other theads
@@ -151,48 +151,41 @@ namespace PongCliente_Sockets
         }
 
         /// <summary> IDK</summary>
-        private void updateBall(ref Ball ball, ref FrameRate FR, Player player1, Player player2, Wall wallTop, Wall WallBottom,
-            StatusBoard statusBoard)
+        private void updateBall(ref Ball ball, ref Player player1, ref Player player2, ref Wall wallTop, ref Wall wallBottom, ref StatusBoard statusBoard)
         {
-            int dirX, dirY;
+            int distanceToTopWall = (int)ball.pos.y - (wallTop.line.p1.y + 1);
+            int distanceToBottomWall = (wallBottom.line.p1.y - 1) - (int)ball.pos.y;
 
-            int maxX, maxY;
-            maxX = (int)ball.vector.x;
-            maxY = (int)ball.vector.y;
+            float absVectorY = Math.Abs(ball.vector.y);
 
-            int i = 0; int j = 0;
-
-            while (i < maxX || j < maxY)
+            if ((distanceToTopWall < absVectorY) && (distanceToTopWall != 0))
             {
-                HitboxHandler.handleHit(ref ball, ref WallBottom);
+                ball.pos.y -= distanceToTopWall;
                 HitboxHandler.handleHit(ref ball, ref wallTop);
-                HitboxHandler.handleHit(ref ball, ref player1);
-                HitboxHandler.handleHit(ref ball, ref player2);
-                HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
-
-                if (i < maxX) 
-                {
-
-                    // Does a little math trick to get +1 || -1 || 0 from the vector
-                    dirX = (int)(ball.vector.x / Math.Abs(ball.vector.x));
-                    if (dirX != -1 && dirX != 1) dirX = 0;
-                    ball.pos.x += (dirX);
-
-                    i++;
-                }
-
-                if (j < maxX)
-                { 
-
-                    // Does a little math trick to get +1 || -1 || 0 from the vector
-                    dirY = (int)(ball.vector.y / Math.Abs(ball.vector.y));
-                    if (dirY != -1 && dirY != 1) dirY = 0;
-                    ball.pos.y += (dirY);
-
-                    j++;
-                }
+                ball.pos.y += absVectorY - distanceToTopWall;
             }
-            //throw new NotImplementedException();
+            else if ((distanceToBottomWall < ball.vector.y) && (distanceToBottomWall != 0))
+            {
+                ball.pos.y += distanceToBottomWall;
+                HitboxHandler.handleHit(ref ball, ref wallBottom);
+                ball.pos.y -= absVectorY - distanceToBottomWall;
+            }
+            else
+            {
+                ball.pos.y += ball.vector.y;
+            }
+
+            ball.pos.x += ball.vector.x;
+
+
+            //HitboxHandler.handleHit(ref ball, ref wallBottom);
+            //HitboxHandler.handleHit(ref ball, ref wallTop);
+            HitboxHandler.handleHit(ref ball, ref player1);
+            HitboxHandler.handleHit(ref ball, ref player2);
+            HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
+
+
+            throw new NotImplementedException();
         }
 
         /// <summary> Draws the scoreBoard in to the screen </summary>
