@@ -1,6 +1,7 @@
-﻿using System;
+﻿using PongCliente_Sockets.Interfaces;
+using System;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.Model.Math_Objects
 {
     class Vector : ICloneable, ICompareBool
     {

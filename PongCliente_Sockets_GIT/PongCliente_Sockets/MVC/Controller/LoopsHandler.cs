@@ -1,4 +1,9 @@
-﻿using PongCliente_Sockets.MVC.Controller;
+﻿using PongCliente_Sockets.Async;
+using PongCliente_Sockets.Menus;
+using PongCliente_Sockets.MVC.Controller;
+using PongCliente_Sockets.MVC.Model.Math_Objects;
+using PongCliente_Sockets.MVC.Model.Serializable;
+using PongCliente_Sockets.MVC.View;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.Controller
 {
     class LoopsHandler
     {

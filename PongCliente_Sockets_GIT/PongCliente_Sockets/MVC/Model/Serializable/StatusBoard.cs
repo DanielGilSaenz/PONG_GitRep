@@ -1,10 +1,12 @@
-﻿using System;
+﻿using PongCliente_Sockets.Interfaces;
+using PongCliente_Sockets.MVC.Model.Math_Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.Model.Serializable
 {
     [Serializable]
     class StatusBoard : ICloneable, ICompareBool

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using PongCliente_Sockets.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.Model.Math_Objects
 {
     class fPoint: ICloneable, ICompareBool
     {

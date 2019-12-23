@@ -1,4 +1,7 @@
-﻿using System;
+﻿using PongCliente_Sockets.MVC.Model.Math_Objects;
+using PongCliente_Sockets.MVC.Model.Serializable;
+using PongCliente_Sockets.MVC.View;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

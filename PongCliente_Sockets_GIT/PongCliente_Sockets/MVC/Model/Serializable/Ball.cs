@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using PongCliente_Sockets.Interfaces;
+using PongCliente_Sockets.MVC.Model.Math_Objects;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.Model.Serializable
 {
     [Serializable]
     class Ball : ICloneable, ICompareBool

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.Async
 {
     class FrameRate
     {

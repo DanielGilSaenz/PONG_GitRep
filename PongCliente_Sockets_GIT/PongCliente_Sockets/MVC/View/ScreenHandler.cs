@@ -1,9 +1,11 @@
-﻿using System;
+﻿using PongCliente_Sockets.Menus;
+using PongCliente_Sockets.MVC.Model.Math_Objects;
+using System;
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.MVC.View
 {
     class ScreenHandler
     {

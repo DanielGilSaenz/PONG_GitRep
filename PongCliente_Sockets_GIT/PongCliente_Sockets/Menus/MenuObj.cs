@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PongCliente_Sockets
+namespace PongCliente_Sockets.Menus
 {
     [Serializable]
     class MenuObj
