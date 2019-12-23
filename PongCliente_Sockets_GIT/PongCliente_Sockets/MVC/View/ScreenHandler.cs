@@ -130,60 +130,6 @@ namespace PongCliente_Sockets.MVC.View
                 Console.ForegroundColor = color;
                 Console.Write(pixel);
             }
-
-            /*
-            int min, max;
-            int diffX, diffY;
-            int x1, y1;
-            int x2, y2;
-
-
-            if (line.p1.y > line.p2.y)  { y1 = line.p2.y; y2 = line.p1.y; }
-            else                        { y1 = line.p1.y; y2 = line.p2.y; }
-
-            if (line.p1.x > line.p2.x)  { x1 = line.p2.x; x2 = line.p1.x; }
-            else                        { x1 = line.p1.x; x2 = line.p2.x; }
-
-            diffX = x2 - x1;
-            diffY = y2 - y1;
-
-            double m = line.Slope();
-            if(double.IsInfinity(m))
-            {
-                min = y1; max = y2;
-                for (int i = min; i < max; i++)
-                {
-                    Console.SetCursorPosition(x1, i);
-                    Console.ForegroundColor = color;
-                    Console.Write(pixel);
-                }
-            }
-            else
-            {
-                if(diffX > diffY)
-                {
-                    min = x1; max = x2;
-                    for (int height, i = min; i < max; i++)
-                    {
-                        height = line.getFromEquation_Y(i, m);
-                        Console.SetCursorPosition(i, height);
-                        Console.ForegroundColor = color;
-                        Console.Write(pixel);
-                    }
-                }
-                else
-                {
-                    min = y1; max = y2;
-                    for (int left, i = min; i < max; i++)
-                    {
-                        left = (int)line.getFromEquation_X(i, m);
-                        Console.SetCursorPosition(left, i);
-                        Console.ForegroundColor = color;
-                        Console.Write(pixel);
-                    }
-                }
-            }
-            */
         }
 
         /// <summary> Draws a point into the screen</summary>
