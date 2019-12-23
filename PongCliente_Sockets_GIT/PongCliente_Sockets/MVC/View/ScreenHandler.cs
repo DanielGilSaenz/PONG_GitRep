@@ -154,7 +154,7 @@ namespace PongCliente_Sockets
                     min = x1; max = x2;
                     for (int height, i = min; i < max; i++)
                     {
-                        height = line.getFromEcuation_Y(i, m);
+                        height = line.getFromEquation_Y(i, m);
                         Console.SetCursorPosition(i, height);
                         Console.ForegroundColor = color;
                         Console.Write(pixel);
@@ -165,7 +165,7 @@ namespace PongCliente_Sockets
                     min = y1; max = y2;
                     for (int left, i = min; i < max; i++)
                     {
-                        left = (int)line.getFromEcuation_X(i, m);
+                        left = (int)line.getFromEquation_X(i, m);
                         Console.SetCursorPosition(left, i);
                         Console.ForegroundColor = color;
                         Console.Write(pixel);

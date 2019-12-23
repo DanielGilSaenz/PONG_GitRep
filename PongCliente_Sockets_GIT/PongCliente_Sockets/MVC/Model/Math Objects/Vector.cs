@@ -22,9 +22,9 @@ namespace PongCliente_Sockets
         public static Vector getRandom()
         {
             Random rnd = new Random();
-            int[] vals = new int[] { -4, -3, -2, -1, 1, 2, 3, 4 };
-
-            return new Vector(vals[rnd.Next(vals.Length)], vals[rnd.Next(vals.Length)]);
+            return new Vector(
+                Resources.rndVectorValues[rnd.Next(Resources.rndVectorValues.Length)], 
+                Resources.rndVectorValues[rnd.Next(Resources.rndVectorValues.Length)]);
         }
 
         public bool Compare(object obj)
