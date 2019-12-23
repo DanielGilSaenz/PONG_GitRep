@@ -135,7 +135,7 @@ namespace PongCliente_Sockets
                 );
 
             // Initialize the Ball
-            ball = new Ball(new fPoint(screenHandler.max_W / 2, screenHandler.max_H / 2),new fVector(2,4));
+            ball = new Ball(new fPoint(screenHandler.max_W / 2, screenHandler.max_H / 2),new fVector(2,5));
 
             // Initialize the scoreBoard
             statusBoard = new StatusBoard(new Point(screenHandler.max_W / 2, 3),0, 0, 10);
