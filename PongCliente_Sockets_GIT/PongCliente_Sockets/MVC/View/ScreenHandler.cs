@@ -123,6 +123,15 @@ namespace PongCliente_Sockets.MVC.View
         /// this is the most efficient for drawing lines</summary>
         public void drawLine(Line line, ConsoleColor color, char pixel)
         {
+            var points = line.getPoints();
+            foreach(Point p in points)
+            {
+                Console.SetCursorPosition(p.x, p.y);
+                Console.ForegroundColor = color;
+                Console.Write(pixel);
+            }
+
+            /*
             int min, max;
             int diffX, diffY;
             int x1, y1;
@@ -174,6 +183,7 @@ namespace PongCliente_Sockets.MVC.View
                     }
                 }
             }
+            */
         }
 
         /// <summary> Draws a point into the screen</summary>

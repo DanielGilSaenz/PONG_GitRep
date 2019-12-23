@@ -61,12 +61,14 @@ namespace PongCliente_Sockets
 
         static void Main(string[] args)
         {
-            // GOTO Label
-            begining : 
+        // GOTO Label
+        begining:
 
-            initPlayground();
+            List<object> gameObj = initPlayground();
 
-            int selected = loopsHandler.menuLoop(menu, screenHandler);
+            loopsHandler = new LoopsHandler(gameObj);
+
+            int selected = loopsHandler.menuLoop(menu);
             
             // Option selected is "play"
             if(selected == 0)
@@ -77,7 +79,7 @@ namespace PongCliente_Sockets
                 screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
 
                 // Does the loop that handles the game
-                loopsHandler.gameLoop(player1, player2, ball, topWall, bottomWall, statusBoard, screenHandler);
+                loopsHandler.gameLoop();
             }
 
             if (selected == 1) goto begining;
@@ -88,8 +90,10 @@ namespace PongCliente_Sockets
         }
 
         /// <summary> Initializes the objects of the playground </summary>
-        public static void initPlayground()
+        public static List<object> initPlayground()
         {
+            // This list is used to make reference to teh objects
+            List<object> gameObj = new List<object>();
             
             // We create the menus
             menu = new MenuObj(new string[] { "Jugar", "Configuracion", "Salir" }, null, false);
@@ -98,7 +102,6 @@ namespace PongCliente_Sockets
             // Initialize the graphics and the controller
             FrameRate frameRate = new FrameRate(15);
             screenHandler = new ScreenHandler();
-            loopsHandler = new LoopsHandler(frameRate);
 
             // This is the offset on top and bottom of the walls
             int vOffset = 7;
@@ -132,10 +135,27 @@ namespace PongCliente_Sockets
                 );
 
             // Initialize the Ball
-            ball = new Ball(new fPoint(screenHandler.max_W / 2, screenHandler.max_H / 2), fVector.getRandom());
+            ball = new Ball(new fPoint(screenHandler.max_W / 2, screenHandler.max_H / 2),new fVector(2,4));
 
             // Initialize the scoreBoard
             statusBoard = new StatusBoard(new Point(screenHandler.max_W / 2, 3),0, 0, 10);
+
+            gameObj.Add(menu);
+            gameObj.Add(menuConfig);
+
+            gameObj.Add(frameRate);
+            gameObj.Add(screenHandler);
+
+            gameObj.Add(topWall);
+            gameObj.Add(bottomWall);
+
+            gameObj.Add(player1);
+            gameObj.Add(player2);
+
+            gameObj.Add(ball);
+            gameObj.Add(statusBoard);
+
+            return gameObj;
         }
 
     }

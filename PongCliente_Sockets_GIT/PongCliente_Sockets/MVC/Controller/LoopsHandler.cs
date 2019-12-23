@@ -17,16 +17,57 @@ namespace PongCliente_Sockets.MVC.Controller
     {
 
         private List<ConsoleKey> keysBuffer = new List<ConsoleKey>();
+
+        private MenuObj menu;
+        private MenuObj menuConfig;
+
         private FrameRate frameRate;
+        private ScreenHandler screenHandler;
+
+        private Wall topWall;
+        private Wall bottomWall;
+
+        private Player player1;
+        private Player player2;
+        private Ball ball;
+        private StatusBoard statusBoard;
 
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
-        public LoopsHandler(FrameRate frameRate)
+        public LoopsHandler(List<object> gameObj)
         {
-            this.frameRate = frameRate;
+            menu =          (MenuObj)gameObj[0];
+            menuConfig =    (MenuObj)gameObj[1];
+
+            frameRate =     (FrameRate)gameObj[2];
+            screenHandler = (ScreenHandler)gameObj[3];
+
+            topWall =       (Wall)gameObj[4];
+            bottomWall =    (Wall)gameObj[5];
+
+            player1 =       (Player)gameObj[6];
+            player2 =       (Player)gameObj[7];
+
+            ball =          (Ball)gameObj[8];
+            statusBoard =   (StatusBoard)gameObj[9];
+
+            //gameObj.Add(menu);
+            //gameObj.Add(menuConfig);
+
+            //gameObj.Add(frameRate);
+            //gameObj.Add(screenHandler);
+
+            //gameObj.Add(topWall);
+            //gameObj.Add(bottomWall);
+
+            //gameObj.Add(player1);
+            //gameObj.Add(player2);
+
+            //gameObj.Add(ball);
+            //gameObj.Add(statusBoard);
         }
 
         /// <summary>Shows the menu and returns the selected option </summary>
-        public int menuLoop(MenuObj mainMenu, ScreenHandler screenHandler)
+        public int menuLoop(MenuObj mainMenu)
         {
             while(true)
             {
@@ -43,17 +84,17 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
-        public void gameLoop(Player player1, Player player2, Ball ball, Wall wallTop, Wall wallBottom, StatusBoard statusBoard, ScreenHandler screenHandler)
+        public void gameLoop()
         {
-            Task task1 = new Task(() => handleInput(ref keysBuffer, ref player1, ref player2, statusBoard));
-            Task task2 = new Task(() => handlePhysics(ball, player1, player2, wallTop, wallBottom, statusBoard, screenHandler));
+            Task task1 = new Task(() => handleInput());
+            Task task2 = new Task(() => handlePhysics());
 
             task1.Start();
             task2.Start();
         }
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
-        private void handlePhysics(Ball ball, Player player1, Player player2, Wall wallTop, Wall wallBottom, StatusBoard statusBoard, ScreenHandler screenHandler)
+        private void handlePhysics()
         {
             // Initializes the locks
             Locks.READING = true;
@@ -93,8 +134,8 @@ namespace PongCliente_Sockets.MVC.Controller
                 // THEN DO CALCULATIONS
                 // Ball = new Ball new Coordinates
                 // Player = new Player new Coordinates
-                updatePlayerPos(ref keysBuffer, ref player1, ref player2);
-                updateBall(ref ball, ref player1, ref player2, ref wallTop, ref wallBottom, ref statusBoard);
+                updatePlayerPos();
+                updateBall();
 
 
                 // Locks the other theads
@@ -123,9 +164,9 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Reads the keys while the screen is not drawing</summary>
-        private void handleInput(ref List<ConsoleKey> keyBuffer, ref Player p1, ref Player p2, StatusBoard scoreBoard)
+        private void handleInput()
         {
-            while (scoreBoard.gameIsOver == false)
+            while (statusBoard.gameIsOver == false)
             {
                 if(Locks.DRAWING == false)
                 {
@@ -133,9 +174,9 @@ namespace PongCliente_Sockets.MVC.Controller
                     {
                         
                         ConsoleKey key = Console.ReadKey(true).Key;
-                        if((key==p1.keyUp)||(key==p1.keyDown)||(key==p2.keyUp)||(key==p2.keyDown))
+                        if ((key == player1.keyUp) || (key == player1.keyDown) || (key == player2.keyUp) || (key == player2.keyDown))
                         {
-                            keyBuffer.Add(key);
+                            keysBuffer.Add(key);
                         }
                     }
                 }
@@ -143,18 +184,18 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Updates the players position according to the keys in the buffer</summary>
-        private void updatePlayerPos(ref List<ConsoleKey> keyBuffer, ref Player p1, ref Player p2)
+        private void updatePlayerPos()
         {
-            foreach(ConsoleKey c in keyBuffer)
+            foreach(ConsoleKey c in keysBuffer)
             {
-                p1.userUpdate(c);
-                p2.userUpdate(c);
+                player1.userUpdate(c);
+                player2.userUpdate(c);
             }
-            keyBuffer = new List<ConsoleKey>();
+            keysBuffer = new List<ConsoleKey>();
         }
 
         /// <summary> IDK</summary>
-        private void updateBall(ref Ball ball, ref Player player1, ref Player player2, ref Wall wallTop, ref Wall wallBottom, ref StatusBoard statusBoard)
+        private void updateBall()
         {
             Line lineOfBall = new Line(Point.Cast(ball.pos), new Point((int)ball.pos.x + (int)ball.vector.x, (int)ball.pos.y + (int)ball.vector.y));
 
@@ -168,8 +209,8 @@ namespace PongCliente_Sockets.MVC.Controller
             {
                 fVector lastVector = (fVector)ball.vector.Clone();
                 ball.pos = fPoint.Cast(p);
-                HitboxHandler.handleHit(ref ball, ref wallBottom);
-                HitboxHandler.handleHit(ref ball, ref wallTop);
+                HitboxHandler.handleHit(ref ball, ref bottomWall);
+                HitboxHandler.handleHit(ref ball, ref topWall);
                 HitboxHandler.handleHit(ref ball, ref player1);
                 HitboxHandler.handleHit(ref ball, ref player2);
                 HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
