@@ -13,8 +13,8 @@ namespace PongCliente_Sockets
 
         private List<ConsoleKey> keysBuffer = new List<ConsoleKey>();
         private FrameRate frameRate;
-        private Point middle;
 
+        // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(FrameRate frameRate)
         {
             this.frameRate = frameRate;
@@ -38,8 +38,7 @@ namespace PongCliente_Sockets
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
-        public void gameLoop(Player player1, Player player2, Ball ball, Wall wallTop, Wall wallBottom, 
-            StatusBoard statusBoard, ScreenHandler screenHandler)
+        public void gameLoop(Player player1, Player player2, Ball ball, Wall wallTop, Wall wallBottom, StatusBoard statusBoard, ScreenHandler screenHandler)
         {
             Task task1 = new Task(() => handleInput(ref keysBuffer, ref player1, ref player2, statusBoard));
             Task task2 = new Task(() => handlePhysics(ball, player1, player2, wallTop, wallBottom, statusBoard, screenHandler));
@@ -49,8 +48,7 @@ namespace PongCliente_Sockets
         }
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
-        private void handlePhysics(Ball ball, Player player1, Player player2, Wall wallTop, Wall wallBottom, 
-            StatusBoard statusBoard, ScreenHandler screenHandler)
+        private void handlePhysics(Ball ball, Player player1, Player player2, Wall wallTop, Wall wallBottom, StatusBoard statusBoard, ScreenHandler screenHandler)
         {
             // Initializes the locks
             Locks.READING = true;
@@ -153,39 +151,27 @@ namespace PongCliente_Sockets
         /// <summary> IDK</summary>
         private void updateBall(ref Ball ball, ref Player player1, ref Player player2, ref Wall wallTop, ref Wall wallBottom, ref StatusBoard statusBoard)
         {
-            int distanceToTopWall = (int)ball.pos.y - (wallTop.line.p1.y + 1);
-            int distanceToBottomWall = (wallBottom.line.p1.y - 1) - (int)ball.pos.y;
+            Line lineOfBall = new Line(Point.Cast(ball.pos), new Point((int)ball.pos.x + (int)ball.vector.x, (int)ball.pos.y + (int)ball.vector.y));
 
-            float absVectorY = Math.Abs(ball.vector.y);
+            // Gets all the points of the line
+            var points = lineOfBall.getPoints();
 
-            if ((distanceToTopWall < absVectorY) && (distanceToTopWall != 0))
+            // Removes the first point, it is the ball current position
+            points.RemoveAt(0);
+
+            foreach(Point p in points)
             {
-                ball.pos.y -= distanceToTopWall;
-                HitboxHandler.handleHit(ref ball, ref wallTop);
-                ball.pos.y += absVectorY - distanceToTopWall;
-            }
-            else if ((distanceToBottomWall < ball.vector.y) && (distanceToBottomWall != 0))
-            {
-                ball.pos.y += distanceToBottomWall;
+                fVector lastVector = (fVector)ball.vector.Clone();
+                ball.pos = fPoint.Cast(p);
                 HitboxHandler.handleHit(ref ball, ref wallBottom);
-                ball.pos.y -= absVectorY - distanceToBottomWall;
+                HitboxHandler.handleHit(ref ball, ref wallTop);
+                HitboxHandler.handleHit(ref ball, ref player1);
+                HitboxHandler.handleHit(ref ball, ref player2);
+                HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
+                if (!lastVector.Compare(ball.vector)) break;
             }
-            else
-            {
-                ball.pos.y += ball.vector.y;
-            }
 
-            ball.pos.x += ball.vector.x;
-
-
-            //HitboxHandler.handleHit(ref ball, ref wallBottom);
-            //HitboxHandler.handleHit(ref ball, ref wallTop);
-            HitboxHandler.handleHit(ref ball, ref player1);
-            HitboxHandler.handleHit(ref ball, ref player2);
-            HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
-
-
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         /// <summary> Draws the scoreBoard in to the screen </summary>

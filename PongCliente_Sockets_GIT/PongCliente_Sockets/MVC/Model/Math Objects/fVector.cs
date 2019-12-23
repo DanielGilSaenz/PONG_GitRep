@@ -22,13 +22,13 @@ namespace PongCliente_Sockets
             return Math.Sqrt(x * x + y * y);
         }
 
-        /// <summary> Gets a random vector wih values betwen -10 and +10</summary>
+        /// <summary> Gets a random vector wih values betwen -10 and +10, excluding 0, -1 and +1</summary>
         public static fVector getRandom()
         {
             Random rnd = new Random();
-            int[] vals = new int[] { -4, -3, -2, -1, 1, 2, 3, 4 };
-
-            return new fVector(vals[rnd.Next(vals.Length)], vals[rnd.Next(vals.Length)]);
+            return new fVector(
+                Resources.rndVectorValues[rnd.Next(Resources.rndVectorValues.Length)],
+                Resources.rndVectorValues[rnd.Next(Resources.rndVectorValues.Length)]);
         }
 
         public bool Compare(object obj)

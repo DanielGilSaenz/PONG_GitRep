@@ -13,6 +13,8 @@ namespace PongCliente_Sockets
 {
     class Resources
     {
+        public static int[] rndVectorValues = new int[] { -4, -3, -2, -1, 1, 2, 3, 4 };
+
         public const char cWall = '░';
         public const char cRect = '█';
         public const char cBlock = '■';
