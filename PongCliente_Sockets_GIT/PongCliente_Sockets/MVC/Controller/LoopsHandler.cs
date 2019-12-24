@@ -146,7 +146,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
                 if (delay.Milliseconds > 0) Thread.Sleep(delay);
                 frameRate.actualFrame++;
-                //Thread.Sleep(1000);
+                //Thread.Sleep(100);
 
                 // To reset the actual frame if it is over the max FPS
                 if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
@@ -198,6 +198,8 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> IDK</summary>
         private void updateBall()
         {
+            object[] objs = new object[] { ball, topWall, bottomWall, player1, player2 };
+
             Line lineOfBall = new Line(Point.Cast(ball.pos), new Point((int)ball.pos.x + (int)ball.vector.x, (int)ball.pos.y + (int)ball.vector.y));
 
             // Gets all the points of the line
@@ -208,6 +210,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
             foreach(Point p in points)
             {
+                //screenHandler.drawDebug(objs);
                 ball.pos = fPoint.Cast(p);
                 if (HitboxHandler.handleHit(ref ball, ref bottomWall)) break;
                 if (HitboxHandler.handleHit(ref ball, ref topWall)) break;

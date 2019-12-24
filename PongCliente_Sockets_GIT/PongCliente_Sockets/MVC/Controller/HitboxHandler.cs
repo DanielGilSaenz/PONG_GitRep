@@ -17,15 +17,15 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Checks if the ball hits the wall and changes its direction</summary>
         public static bool handleHit(ref Ball ball, ref Wall wall)
         {
-            // Hit top of the wall
-            if (ball.pos.y == wall.line.p2.y - 1)
+            // Hit top of the wall and the ball is going to hit wall
+            if ((ball.pos.y == wall.line.p2.y - 1)  && (ball.vector.y > 0))
             {
                 bounceY(ref ball);
                 return true;
             }
 
-            // Hit bottom of wall
-            if (ball.pos.y == wall.line.p2.y + 1)
+            // Hit bottom of wall and the ball is going to hit wall
+            if ((ball.pos.y == wall.line.p2.y + 1) && (ball.vector.y < 0))
             {
                 bounceY(ref ball);
                 return true;
@@ -38,13 +38,13 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Checks if the ball hits the player and changes its direction</summary>
         public static bool handleHit(ref Ball ball, ref Player player)
         {
-            // Hit left of the player
+            // Hit left of the player and the ball is going to hit the player
             if ((ball.pos.x == player.pos.x - 1) && (ball.vector.x > 0))
             {
                 return handlePlayerHitbox(ref ball, ref player);
             }
 
-            // Hit right of the player
+            // Hit right of the player and the ball is going to hit the player
             if ((ball.pos.x == player.pos.x + 1) && (ball.vector.x < 0))
             {
                 return handlePlayerHitbox(ref ball, ref player);

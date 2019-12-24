@@ -101,7 +101,7 @@ namespace PongCliente_Sockets
             menuConfig = new MenuObj(new string[] { "Nombre", "tipo bola", "Velocidad", "Tamaño players", "Salir" }, null, true);
 
             // Initialize the graphics and the controller
-            FrameRate frameRate = new FrameRate(15);
+            FrameRate frameRate = new FrameRate(10);
             screenHandler = new ScreenHandler();
 
             // This is the offset on top and bottom of the walls
@@ -124,15 +124,15 @@ namespace PongCliente_Sockets
             // Initialize the Player1
             player1 = new Player(
                 ConsoleKey.UpArrow,ConsoleKey.DownArrow,
-                bottomWall.line.p2.y, topWall.line.p2.y + 1,
-                new Point(topWall.line.p2.x - 1, screenHandler.max_H / 2), 3
+                bottomWall.line.p2.y - 1, topWall.line.p2.y + 1,
+                new Point(topWall.line.p2.x , screenHandler.max_H / 2), 3
                 );
 
             // Initialize the Player1
             player2 = new Player(
                 ConsoleKey.UpArrow, ConsoleKey.DownArrow,
-                bottomWall.line.p1.y, topWall.line.p1.y + 1,
-                new Point(topWall.line.p1.x, screenHandler.max_H / 2), 3
+                bottomWall.line.p1.y - 1, topWall.line.p1.y + 1,
+                new Point(topWall.line.p1.x , screenHandler.max_H / 2), 3
                 );
 
             // Initialize the Ball
