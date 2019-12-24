@@ -76,14 +76,14 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
                 // It does this to know if it has to subtract or add to get to the last value
                 if(this.p1.y > this.p2.y)
                 {
-                    for (int i = p1.y; i > p2.y; i--)
+                    for (int i = p1.y; i >= p2.y; i--)
                     {
                         pointsOfTheLine.Add(new Point(x1, i));
                     }
                 }
                 else
                 {
-                    for (int i = p1.y; i < p2.y; i++)
+                    for (int i = p1.y; i <= p2.y; i++)
                     {
                         pointsOfTheLine.Add(new Point(x1, i));
                     }
@@ -102,7 +102,7 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
                     // It does this to know if it has to subtract or add to get to the last value
                     if (this.p1.x > this.p2.x)
                     {
-                        for (int height, i = p1.x; i > p2.x; i--)
+                        for (int height, i = p1.x; i >= p2.x; i--)
                         {
                             height = this.getFromEquation_Y(i, m);
                             pointsOfTheLine.Add(new Point(i, height));
@@ -110,7 +110,7 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
                     }
                     else
                     {
-                        for (int height, i = p1.x; i < p2.x; i++)
+                        for (int height, i = p1.x; i <= p2.x; i++)
                         {
                             height = this.getFromEquation_Y(i, m);
                             pointsOfTheLine.Add(new Point(i, height));
@@ -122,7 +122,7 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
                 {
                     if (this.p1.y > this.p2.y)
                     {
-                        for (int left, i = p1.y; i > p2.y; i--)
+                        for (int left, i = p1.y; i >= p2.y; i--)
                         {
                             left = (int)this.getFromEquation_X(i, m);
                             pointsOfTheLine.Add(new Point(left, i));
@@ -130,7 +130,7 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
                     }
                     else
                     {
-                        for (int left, i = p1.y; i < p2.y; i++)
+                        for (int left, i = p1.y; i <= p2.y; i++)
                         {
                             left = (int)this.getFromEquation_X(i, m);
                             pointsOfTheLine.Add(new Point(left, i));

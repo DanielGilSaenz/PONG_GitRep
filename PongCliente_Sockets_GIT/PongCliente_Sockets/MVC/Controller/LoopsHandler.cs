@@ -146,7 +146,8 @@ namespace PongCliente_Sockets.MVC.Controller
                 delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
                 if (delay.Milliseconds > 0) Thread.Sleep(delay);
                 frameRate.actualFrame++;
-                
+                //Thread.Sleep(1000);
+
                 // To reset the actual frame if it is over the max FPS
                 if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
                 stopWatch.Reset();
@@ -172,12 +173,13 @@ namespace PongCliente_Sockets.MVC.Controller
                 {
                     while (Console.KeyAvailable)
                     {
-                        
+                        if (Locks.DRAWING == true) break;
                         ConsoleKey key = Console.ReadKey(true).Key;
                         if ((key == player1.keyUp) || (key == player1.keyDown) || (key == player2.keyUp) || (key == player2.keyDown))
                         {
                             keysBuffer.Add(key);
                         }
+                        if (Locks.DRAWING == true) break;
                     }
                 }
             }
@@ -207,14 +209,12 @@ namespace PongCliente_Sockets.MVC.Controller
 
             foreach(Point p in points)
             {
-                fVector lastVector = (fVector)ball.vector.Clone();
                 ball.pos = fPoint.Cast(p);
-                HitboxHandler.handleHit(ref ball, ref bottomWall);
-                HitboxHandler.handleHit(ref ball, ref topWall);
-                HitboxHandler.handleHit(ref ball, ref player1);
-                HitboxHandler.handleHit(ref ball, ref player2);
-                HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard);
-                if (!lastVector.Compare(ball.vector)) break;
+                if (HitboxHandler.handleHit(ref ball, ref bottomWall)) break;
+                if (HitboxHandler.handleHit(ref ball, ref topWall)) break;
+                if (HitboxHandler.handleHit(ref ball, ref player1)) break;
+                if (HitboxHandler.handleHit(ref ball, ref player2)) break;
+                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard)) break;
             }
 
             //throw new NotImplementedException();
