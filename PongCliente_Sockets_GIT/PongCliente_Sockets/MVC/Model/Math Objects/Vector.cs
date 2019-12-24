@@ -3,10 +3,12 @@ using System;
 
 namespace PongCliente_Sockets.MVC.Model.Math_Objects
 {
-    class Vector : ICloneable, ICompareBool
+    class Vector : Mostrar, ICloneable, ICompareBool
     {
         public int x { get; set; }
         public int y { get; set; }
+
+        public Vector() { }
 
         public Vector(int x, int y)
         {

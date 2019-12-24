@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PongCliente_Sockets.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace PongCliente_Sockets.Async
 {
-    class FrameRate
+    class FrameRate : Mostrar
     {
         public int FPS { get; set; }
         public int actualFrame { get; set; } = 1;
         public TimeSpan delayTillNextFrame  { get; set; }
 
         public List<int> delayHistory { get; set; } = new List<int>();
+
+        public FrameRate() { }
 
         public FrameRate(int fPS)
         {

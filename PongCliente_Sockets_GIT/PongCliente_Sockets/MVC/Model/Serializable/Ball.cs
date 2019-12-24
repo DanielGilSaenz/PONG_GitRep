@@ -6,10 +6,14 @@ using System.Threading;
 namespace PongCliente_Sockets.MVC.Model.Serializable
 {
     [Serializable]
-    class Ball : ICloneable, ICompareBool
+    class Ball : Mostrar, ICloneable, ICompareBool
     {
         public fPoint pos { get; set; }
         public fVector vector { get; set; }
+
+        public Ball()
+        {
+        }
 
         public Ball(fPoint pos, fVector vector)
         {

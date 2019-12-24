@@ -1,4 +1,5 @@
-﻿using PongCliente_Sockets.Menus;
+﻿using PongCliente_Sockets.Interfaces;
+using PongCliente_Sockets.Menus;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using System;
 
@@ -193,6 +194,33 @@ namespace PongCliente_Sockets.MVC.View
                 */
             }
         }
+
+        /// <summary> Draws the parameters of the passed object into the screen </summary>
+        public void drawDebug(object obj, int x, int y)
+        {
+            Type type = obj.GetType();
+            object classInstance =  Activator.CreateInstance(type, null);
+            _MethodInfo methodInfo = type.GetMethod("getAttr");
+
+            object[] parametersArray = new object[] { obj };
+
+            object result = methodInfo.Invoke(classInstance, parametersArray);
+
+            Console.SetCursorPosition(x, y);
+            Console.Write(type.Name + (string)result);
+        }
+
+        /// <summary> Draws the parameters of the passed objects into the screen </summary>
+        public void drawDebug(object[] objArr)
+        {
+            int y = 0;
+            foreach(object obj in objArr)
+            {
+                drawDebug(obj, 0, y);
+                y++;
+            }
+        }
+
 
         /// <summary> Maximizes the console </summary>
         [DllImport("user32.dll")]

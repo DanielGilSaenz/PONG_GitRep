@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 namespace PongCliente_Sockets.MVC.Model.Serializable
 {
 
-    class Wall : ICloneable, ICompareBool
+    class Wall : Mostrar, ICloneable, ICompareBool
     {
         public Line line { get; set; }
+
+        public Wall() { }
 
         public Wall(Line line)
         {

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using PongCliente_Sockets.Interfaces;
+using System;
 
 namespace PongCliente_Sockets.Menus
 {
     [Serializable]
-    class MenuObj
+    class MenuObj: Mostrar
     {
         public string[] Options { get; private set; } = { "Jugar", "Configuracion", "Salir" };
         public string[] InputFields { get; set; }

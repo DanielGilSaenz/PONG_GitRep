@@ -6,7 +6,7 @@ using System;
 namespace PongCliente_Sockets.MVC.Model.Serializable
 {
     [Serializable]
-    class Player : ICloneable, ICompareBool
+    class Player : Mostrar, ICloneable, ICompareBool
     {
         // Is the cealing and the floor limit for the player
         public int maxY { get; set; }
@@ -20,6 +20,8 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
 
         public ConsoleKey keyUp { get; set; }
         public ConsoleKey keyDown { get; set; }
+
+        public Player() { }
 
         /// <summary> Configs the player key input and the player parameters</summary>
         public Player(ConsoleKey keyUp, ConsoleKey keyDown, int maxY, int minY, Point pos, int size)

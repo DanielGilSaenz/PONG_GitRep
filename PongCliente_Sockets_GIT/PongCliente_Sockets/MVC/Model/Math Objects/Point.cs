@@ -1,13 +1,10 @@
 ﻿using PongCliente_Sockets.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace PongCliente_Sockets.MVC.Model.Math_Objects
 {
-    class Point :ICloneable, ICompareBool
+    class Point : Mostrar, ICloneable, ICompareBool
     {
         public int x { get; set; }
         public int y { get; set; }

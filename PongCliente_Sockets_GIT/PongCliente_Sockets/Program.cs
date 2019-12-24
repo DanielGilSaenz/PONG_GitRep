@@ -65,7 +65,7 @@ namespace PongCliente_Sockets
         begining:
 
             List<object> gameObj = initPlayground();
-
+            
             loopsHandler = new LoopsHandler(gameObj);
 
             int selected = loopsHandler.menuLoop(menu);
@@ -87,6 +87,7 @@ namespace PongCliente_Sockets
 
             // Wait 'till its over
             while (statusBoard.gameIsOver == false);
+            
         }
 
         /// <summary> Initializes the objects of the playground </summary>

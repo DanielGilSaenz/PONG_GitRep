@@ -3,14 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace PongCliente_Sockets.MVC.Model.Math_Objects
 {
-    class Line : ICloneable, ICompareBool
+    class Line : Mostrar, ICloneable, ICompareBool
     {
         public Point p1 { get; set; }
         public Point p2 { get; set; }
+
+        public Line() { }
 
         public Line(Point p1, Point p2)
         {

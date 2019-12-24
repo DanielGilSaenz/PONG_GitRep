@@ -173,7 +173,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 {
                     while (Console.KeyAvailable)
                     {
-                        if (Locks.DRAWING == true) break;
                         ConsoleKey key = Console.ReadKey(true).Key;
                         if ((key == player1.keyUp) || (key == player1.keyDown) || (key == player2.keyUp) || (key == player2.keyDown))
                         {

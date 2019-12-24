@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace PongCliente_Sockets.MVC.Model.Serializable
 {
     [Serializable]
-    class StatusBoard : ICloneable, ICompareBool
+    class StatusBoard : Mostrar, ICloneable, ICompareBool
     {
         public Point pos { get; set; }
 
@@ -19,6 +19,8 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public int win_Score { get; set; }
 
         public bool gameIsOver { get; set; } = false;
+
+        public StatusBoard() { }
 
         public StatusBoard(Point pos, int p1_Score, int p2_Score, int win_Score)
         {
