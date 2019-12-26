@@ -52,15 +52,15 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         {
             if ((s == keyUp) && (bottom.y > minY))
             {
-                pos.y--;
-                top.y--;
-                bottom.y--;
+                pos.y-=2;
+                top.y-=2;
+                bottom.y-=2;
             }
             if ((s == keyDown) && (top.y < maxY))
             {
-                pos.y++;
-                top.y++;
-                bottom.y++;
+                pos.y+=2;
+                top.y+=2;
+                bottom.y+=2;
             }
 
         }

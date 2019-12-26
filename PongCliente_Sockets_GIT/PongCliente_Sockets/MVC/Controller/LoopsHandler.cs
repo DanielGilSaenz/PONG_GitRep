@@ -10,13 +10,14 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace PongCliente_Sockets.MVC.Controller
 {
     class LoopsHandler
     {
 
-        private List<ConsoleKey> keysBuffer = new List<ConsoleKey>();
+        public List<ConsoleKey> keysBuffer = new List<ConsoleKey>();
 
         private MenuObj menu;
         private MenuObj menuConfig;
@@ -49,6 +50,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
             ball =          (Ball)gameObj[8];
             statusBoard =   (StatusBoard)gameObj[9];
+
+            keysBuffer.Add(ConsoleKey.D0);
 
             //gameObj.Add(menu);
             //gameObj.Add(menuConfig);
@@ -164,20 +167,27 @@ namespace PongCliente_Sockets.MVC.Controller
             }
         }
 
+
         /// <summary> Reads the keys while the screen is not drawing</summary>
+        
         private void handleInput()
         {
             while (statusBoard.gameIsOver == false)
             {
                 if(Locks.DRAWING == false)
                 {
-                    while (Console.KeyAvailable)
+                    while (true)
                     {
+                        /*
                         ConsoleKey key = Console.ReadKey(true).Key;
                         if ((key == player1.keyUp) || (key == player1.keyDown) || (key == player2.keyUp) || (key == player2.keyDown))
                         {
                             keysBuffer.Add(key);
                         }
+                        */
+
+                       
+
                         if (Locks.DRAWING == true) break;
                     }
                 }
@@ -192,7 +202,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 player1.userUpdate(c);
                 player2.userUpdate(c);
             }
-            keysBuffer = new List<ConsoleKey>();
+            keysBuffer[0] = ConsoleKey.D0;
         }
 
         /// <summary> IDK</summary>

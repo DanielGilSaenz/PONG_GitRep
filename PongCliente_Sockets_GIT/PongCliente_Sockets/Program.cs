@@ -43,6 +43,7 @@ using PongCliente_Sockets.MVC.Model.Math_Objects;
 
 namespace PongCliente_Sockets
 {
+    
     class Program
     {
         public static MenuObj menu;
@@ -59,6 +60,7 @@ namespace PongCliente_Sockets
         public static Ball ball;
         public static StatusBoard statusBoard;
 
+        [STAThread]
         static void Main(string[] args)
         {
         // GOTO Label
@@ -86,7 +88,22 @@ namespace PongCliente_Sockets
             if (selected == 3) return;
 
             // Wait 'till its over
-            while (statusBoard.gameIsOver == false);
+            while (statusBoard.gameIsOver == false)
+            {
+                if(Locks.DRAWING == false)
+                {
+                    if (Keyboard.IsKeyDown(Key.Up))
+                    {
+                        loopsHandler.keysBuffer[0] = ConsoleKey.UpArrow;
+                    }
+
+                    if (Keyboard.IsKeyDown(Key.Down))
+                    {
+                        loopsHandler.keysBuffer[0] = ConsoleKey.DownArrow;
+                    }
+                }
+                
+            }
             
         }
 
@@ -101,7 +118,7 @@ namespace PongCliente_Sockets
             menuConfig = new MenuObj(new string[] { "Nombre", "tipo bola", "Velocidad", "Tamaño players", "Salir" }, null, true);
 
             // Initialize the graphics and the controller
-            FrameRate frameRate = new FrameRate(10);
+            FrameRate frameRate = new FrameRate(18);
             screenHandler = new ScreenHandler();
 
             // This is the offset on top and bottom of the walls
