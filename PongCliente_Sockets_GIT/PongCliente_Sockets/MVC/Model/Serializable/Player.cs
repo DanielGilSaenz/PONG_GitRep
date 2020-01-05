@@ -1,7 +1,7 @@
 ﻿using PongCliente_Sockets.Interfaces;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using System;
-
+using System.Windows.Input;
 
 namespace PongCliente_Sockets.MVC.Model.Serializable
 {
@@ -12,19 +12,28 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public int maxY { get; set; }
         public int minY { get; set; }
 
+        // Positional info
         public Point pos { get; set; }
         public Point top { get; set; }
         public Point bottom { get; set; }
 
         public int size { get; set; }
 
-        public ConsoleKey keyUp { get; set; }
-        public ConsoleKey keyDown { get; set; }
+        // Directional info: pixel per second, direction +1 == up -1 == down
+        public int pps { get; set; } = 3;
+        public int direction { get; set; } = 0;
+
+        // The configured keys
+        public Key keyUp { get; set; }
+        public Key keyDown { get; set; }
+
+        // The keypress minimal delay to move the player in milliseconds
+        public int keyPressMinDelay_milli = 12;
 
         public Player() { }
 
         /// <summary> Configs the player key input and the player parameters</summary>
-        public Player(ConsoleKey keyUp, ConsoleKey keyDown, int maxY, int minY, Point pos, int size)
+        public Player(Key keyUp, Key keyDown, int maxY, int minY, Point pos, int size)
         {
             this.keyUp = keyUp;
             this.keyDown = keyDown;
@@ -33,7 +42,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
             this.pos = pos;
             this.size = size;
 
-            top = new Point(pos.x, pos.y + 1 + size);
+            top = new Point(pos.x, pos.y + size);
             bottom = new Point(pos.x, pos.y - 1 - size);
 
             if (top.y > maxY) throw new Exception("The position.y is too high and the object cannot be created");
@@ -43,26 +52,68 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         /// <summary> Returns a line that represents the player</summary>
         public Line toLine()
         {
-            return new Line(top,bottom);
+            return new Line(top, bottom);
         }
 
-        /// <summary>  Checks if the player is out of bounds and moves it. 
-        /// The y coordinate is inverted because of the console </summary>
-        public void userUpdate(ConsoleKey s)
+        /// <summary>  Checks if the player is out of bounds and moves it. </summary>
+        public void updatePos(Key s)
         {
+            int distanceToWall;
             if ((s == keyUp) && (bottom.y > minY))
             {
-                pos.y-=2;
-                top.y-=2;
-                bottom.y-=2;
-            }
-            if ((s == keyDown) && (top.y < maxY))
-            {
-                pos.y+=2;
-                top.y+=2;
-                bottom.y+=2;
+                if (direction == 0) { direction--; pps = 1; }
+                else if (direction < 0) pps++;
+
+                distanceToWall = bottom.y - minY;
+
+                if (bottom.y - minY < pps)
+                {
+                    pos.y -= distanceToWall;
+                    top.y -= distanceToWall;
+                    bottom.y -= distanceToWall;
+                }
+                else
+                {
+                    pos.y -= pps;
+                    top.y -= pps;
+                    bottom.y -= pps;
+                }
+                
             }
 
+            else if ((s == keyDown) && (top.y < maxY))
+            {
+                if (direction == 0) { direction++;}
+                else if (direction > 0) pps++;
+
+                distanceToWall = maxY - top.y;
+
+                if (maxY - top.y < pps)
+                {
+                    pos.y += distanceToWall;
+                    top.y += distanceToWall;
+                    bottom.y += distanceToWall;
+                }
+                else
+                {
+                    pos.y += pps;
+                    top.y += pps;
+                    bottom.y += pps;
+                }
+            }
+            this.size = (top.y - bottom.y) / 2;
+        }
+
+        public void resetMomentum()
+        {
+            this.direction = 0;
+            this.pps = 1;
+        }
+
+        /// <summary> Checks if the player is out of bounds and moves it several times</summary>
+        public void updatePos(Key s, int times)
+        {
+            for(int i=0; i< times; i++) updatePos(s);
         }
 
         public bool Compare(object obj)
@@ -73,7 +124,8 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
 
             if (o.maxY == maxY && o.minY == minY 
                 && o.pos.Compare(pos) && o.top.Compare(top) && o.bottom.Compare(bottom) 
-                && o.size == size && o.keyUp == keyUp && o.keyDown == keyDown) return true;
+                && o.size == size && o.keyUp == keyUp && o.keyDown == keyDown
+                && o.pps == pps && o.direction == direction) return true;
             else return false;
         }
 

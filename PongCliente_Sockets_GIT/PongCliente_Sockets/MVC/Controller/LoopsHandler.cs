@@ -11,13 +11,14 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace PongCliente_Sockets.MVC.Controller
 {
     class LoopsHandler
     {
 
-        public List<ConsoleKey> keysBuffer = new List<ConsoleKey>();
+        private List<Key> keysBuffer = new List<Key>();
 
         private MenuObj menu;
         private MenuObj menuConfig;
@@ -50,8 +51,6 @@ namespace PongCliente_Sockets.MVC.Controller
 
             ball =          (Ball)gameObj[8];
             statusBoard =   (StatusBoard)gameObj[9];
-
-            keysBuffer.Add(ConsoleKey.D0);
 
             //gameObj.Add(menu);
             //gameObj.Add(menuConfig);
@@ -89,19 +88,16 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Distributes the work betwen the async tasks </summary>
         public void gameLoop()
         {
-            Task task1 = new Task(() => handleInput());
-            Task task2 = new Task(() => handlePhysics());
+            //Task task1 = new Task(() => handleInput());
+            Task task2 = new Task(() => handleFrameByFrame());
 
-            task1.Start();
+            //task1.Start();
             task2.Start();
         }
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
-        private void handlePhysics()
+        private void handleFrameByFrame()
         {
-            // Initializes the locks
-            Locks.READING = true;
-
             // Initializes the copies of the objects, these are used to
             // keep track of the changes and only draw once wvery change
             Ball lastBall = null;
@@ -117,14 +113,20 @@ namespace PongCliente_Sockets.MVC.Controller
             stopWatch.Start();
             while (statusBoard.gameIsOver == false)
             {
+
+
                 // Locks the other theads
                 Locks.DRAWING = true;
 
                 // Draws the objects if there has been any change
-                if (!ball.Compare(lastBall))           drawBall(ball, screenHandler, false);
-                if (!player1.Compare(lastPlayer1))     drawPlayer(player1, screenHandler, false);
-                if (!player2.Compare(lastPlayer2))     drawPlayer(player2, screenHandler, false);
-                if (!statusBoard.Compare(lastBoard))   drawScoreboard(statusBoard, screenHandler, false);
+                if (!ball.Compare(lastBall))           drawBall(ref ball, ref screenHandler, false);
+                if (!player1.Compare(lastPlayer1))     drawPlayer(ref player1, ref screenHandler, false);
+                if (!player2.Compare(lastPlayer2))     drawPlayer(ref player2, ref screenHandler, false);
+                if (!statusBoard.Compare(lastBoard))   drawScoreboard(ref statusBoard, ref screenHandler, false);
+
+                // debug purposes
+                if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
+                if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
 
 
                 // Keeps a register of the objects to erase later
@@ -134,14 +136,14 @@ namespace PongCliente_Sockets.MVC.Controller
                 lastBoard = (StatusBoard)statusBoard.Clone();
 
 
-                // THEN DO CALCULATIONS
-                // Ball = new Ball new Coordinates
-                // Player = new Player new Coordinates
-                updatePlayerPos();
+                // THEN DOES CALCULATIONS
+                // Updates the ball to the new coordinates
+                // Updates the players to the new coordinates
+                handleInput();
                 updateBall();
 
 
-                // Locks the other theads
+                // Unlocks the other theads
                 Locks.DRAWING = false;
                 stopWatch.Stop();
 
@@ -155,57 +157,39 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
                 stopWatch.Reset();
 
-                // Unlocks the other theads
-                stopWatch.Start();
+                // locks the other theads
                 Locks.DRAWING = true;
 
+                // Waits for the other theads to stop doing things
+                while (Locks.READING);                
+                stopWatch.Start();
+                
+
                 // Erases the previous objects if there are any change
-                if (!ball.Compare(lastBall))            drawBall(lastBall, screenHandler, true);
-                if (!player1.Compare(lastPlayer1))      drawPlayer(lastPlayer1, screenHandler, true);
-                if (!player2.Compare(lastPlayer2))      drawPlayer(lastPlayer2, screenHandler, true);
-                if (!statusBoard.Compare(lastBoard))    drawScoreboard(lastBoard, screenHandler, true);
+                if (!ball.Compare(lastBall))            drawBall(ref lastBall, ref screenHandler, true);
+                if (!player1.Compare(lastPlayer1))      drawPlayer(ref lastPlayer1, ref screenHandler, true);
+                if (!player2.Compare(lastPlayer2))      drawPlayer(ref lastPlayer2, ref screenHandler, true);
+                if (!statusBoard.Compare(lastBoard))    drawScoreboard(ref lastBoard, ref screenHandler, true);
+                
             }
         }
 
 
         /// <summary> Reads the keys while the screen is not drawing</summary>
-        
         private void handleInput()
         {
-            while (statusBoard.gameIsOver == false)
-            {
-                if(Locks.DRAWING == false)
-                {
-                    while (true)
-                    {
-                        /*
-                        ConsoleKey key = Console.ReadKey(true).Key;
-                        if ((key == player1.keyUp) || (key == player1.keyDown) || (key == player2.keyUp) || (key == player2.keyDown))
-                        {
-                            keysBuffer.Add(key);
-                        }
-                        */
+            if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
+            else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
+            else { player1.resetMomentum(); }
 
-                       
+            if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
+            else if (InputHandler.isKeyDown(player2.keyDown)) player2.updatePos(player2.keyDown);
+            else { player2.resetMomentum(); }
 
-                        if (Locks.DRAWING == true) break;
-                    }
-                }
-            }
+            //throw new NotImplementedException();
         }
 
-        /// <summary> Updates the players position according to the keys in the buffer</summary>
-        private void updatePlayerPos()
-        {
-            foreach(ConsoleKey c in keysBuffer)
-            {
-                player1.userUpdate(c);
-                player2.userUpdate(c);
-            }
-            keysBuffer[0] = ConsoleKey.D0;
-        }
-
-        /// <summary> IDK</summary>
+        /// <summary> Handles the ball hitbox and updates its position accordingly </summary>
         private void updateBall()
         {
             object[] objs = new object[] { ball, topWall, bottomWall, player1, player2 };
@@ -233,23 +217,23 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Draws the scoreBoard in to the screen </summary>
-        private void drawScoreboard(StatusBoard statusBoard, ScreenHandler screenHandler, bool erase)
+        private void drawScoreboard(ref StatusBoard statusBoard, ref ScreenHandler screenHandler, bool erase)
         {
-            if(erase)
+            if (erase)
             {
-                drawNumber(-1, statusBoard.pos, -1, screenHandler);
-                drawNumber(-1, statusBoard.pos, 1, screenHandler);
+                drawNumber(-1, statusBoard.pos, -1, ref screenHandler);
+                drawNumber(-1, statusBoard.pos, 1, ref screenHandler);
             }
             else
             {
-                drawNumber(statusBoard.p2_Score, statusBoard.pos, -1, screenHandler);
-                drawNumber(statusBoard.p1_Score, statusBoard.pos, 1, screenHandler);
+                drawNumber(statusBoard.p2_Score, statusBoard.pos, -1, ref screenHandler);
+                drawNumber(statusBoard.p1_Score, statusBoard.pos, 1, ref screenHandler);
             }
             screenHandler.drawBlock(statusBoard.pos, Resources.blockTwoDots);
             // throw new NotImplementedException();
         }
 
-        private void drawNumber(int number, Point pos, int direccion, ScreenHandler screenHandler)
+        private void drawNumber(int number, Point pos, int direccion, ref ScreenHandler screenHandler)
         {
             int offset = ((1 + 2) * direccion);
             Point unitPos = new Point(pos.x + ((1 + 2) * direccion), pos.y);
@@ -295,13 +279,13 @@ namespace PongCliente_Sockets.MVC.Controller
             //throw new NotImplementedException();
         }
 
-        private void drawBall(Ball ball, ScreenHandler screenHandler, bool erase)
+        private void drawBall(ref Ball ball, ref ScreenHandler screenHandler, bool erase)
         {
             if(erase) screenHandler.drawPoint(Point.Cast(ball.pos), ConsoleColor.Black, Resources.cSpace);
             else screenHandler.drawPoint(Point.Cast(ball.pos), ConsoleColor.White, Resources.cBlock);
         }
 
-        private void drawPlayer(Player player, ScreenHandler screenHandler, bool erase)
+        private void drawPlayer(ref Player player, ref ScreenHandler screenHandler, bool erase)
         {
             if(erase) screenHandler.drawLine(player.toLine(), ConsoleColor.White, Resources.cSpace);
             else screenHandler.drawLine(player.toLine(), ConsoleColor.White, Resources.cRect);
