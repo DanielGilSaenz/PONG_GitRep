@@ -127,6 +127,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 // debug purposes
                 if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
                 if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
+                if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
 
 
                 // Keeps a register of the objects to erase later
