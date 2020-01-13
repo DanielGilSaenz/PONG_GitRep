@@ -71,7 +71,7 @@ namespace PongCliente_Sockets.MVC.Controller
             menuConfig = new MenuObj(new string[] { "Nombre", "tipo bola", "Velocidad", "Tamaño players", "Salir" }, null, true);
 
             // Initialize the graphics and the controller
-            FrameRate frameRate = new FrameRate(6);
+            FrameRate frameRate = new FrameRate(16);
             screenHandler = new ScreenHandler();
 
             // This is the offset on top and bottom of the walls
