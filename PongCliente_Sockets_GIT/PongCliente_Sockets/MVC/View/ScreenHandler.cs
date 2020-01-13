@@ -221,6 +221,23 @@ namespace PongCliente_Sockets.MVC.View
             }
         }
 
+        /// <summary>Draws empty chars on the horizontal specified lines, for example, 
+        /// from line 3 to line 7 all lines will be erased </summary>
+        public void clearLines_V(int from, int to)
+        {
+            string line = "";
+
+            for (int i = 0; i < max_W; i++)
+            {
+                line += " ";
+            }
+
+            for (int i = from; i < to; i++)
+            {
+                Console.SetCursorPosition(0, i);
+                Console.Write(line);
+            }
+        }
 
         /// <summary> Maximizes the console </summary>
         [DllImport("user32.dll")]

@@ -17,6 +17,8 @@ namespace PongCliente_Sockets.MVC.Controller
 {
     class LoopsHandler
     {
+        private bool wasF3Pressed;
+        private bool debugOn = false;
 
         private List<Key> keysBuffer = new List<Key>();
 
@@ -125,10 +127,22 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!statusBoard.Compare(lastBoard))   drawScoreboard(ref statusBoard, ref screenHandler, false);
 
                 // debug purposes
-                if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
-                if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
-                if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
+                if(debugOn)
+                {
+                    if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
+                    if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
+                    if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
 
+                    screenHandler.drawDebug(player1, 0, 0);
+                    screenHandler.drawDebug(player1, 0, 0);
+
+                    screenHandler.drawDebug(player2, 0, 1);
+                    screenHandler.drawDebug(player2, 0, 1);
+
+                    screenHandler.drawDebug(ball, 0, 2);
+                    screenHandler.drawDebug(ball, 0, 2);
+
+                }
 
                 // Keeps a register of the objects to erase later
                 lastBall = (Ball)ball.Clone();
@@ -179,13 +193,36 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Reads the keys while the screen is not drawing</summary>
         private void handleInput()
         {
+            //handel player1
             if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
             else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
             else { player1.resetMomentum(); }
 
+            //handel player2
             if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
             else if (InputHandler.isKeyDown(player2.keyDown)) player2.updatePos(player2.keyDown);
             else { player2.resetMomentum(); }
+
+            //handel debug
+            if (InputHandler.isKeyDown(Key.F3))
+            {
+                if(!wasF3Pressed)
+                {
+                    debugOn = !debugOn;
+                    wasF3Pressed = true;
+                }
+                
+                if (!debugOn)
+                {
+                    screenHandler.clearLines_V(0, 4);
+                    drawScoreboard(ref statusBoard, ref screenHandler, false);
+                }
+
+            }
+            else
+            {
+                wasF3Pressed = false;
+            }
 
             //throw new NotImplementedException();
         }
