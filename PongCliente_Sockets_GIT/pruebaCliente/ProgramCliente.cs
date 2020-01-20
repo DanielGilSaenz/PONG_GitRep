@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PongCliente_Sockets.MVC.Model.Math_Objects;
+using PongCliente_Sockets.MVC.Model.Serializable;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -6,40 +8,47 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace pruebaCliente
 {
-    class Program
+    class ProgramCliente
     {
         static void Main(string[] args)
         {
+            Player player = new Player(Key.W, Key.S, 800, 10, new Point(200, 20), 3);
+
+
             IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 80);
 
             Socket cliente = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-            Byte[] msg = Encoding.ASCII.GetBytes("Me llamo cliente y este es un mensaje de prueba: 001");
+            Byte[] msg = Encoding.ASCII.GetBytes(player.getAttr(player) + Environment.NewLine);
 
-            try
+            //try
+            //{
+            cliente.Connect(localEndPoint);
+            if (cliente.Connected) Console.WriteLine("Connected ");
+
+            //Thread.Sleep(5000);
+            long i = 0;
+            while (true)
             {
-                cliente.Connect(localEndPoint);
-                if (cliente.Connected) Console.WriteLine("Connected ");
-
-                //Thread.Sleep(5000);
-
-                cliente.Send(msg);
-                Console.WriteLine("Msg sent ");
-
-                
-                recibirRespuesta(cliente);
-
-                Console.ReadKey(true);
-                //cliente.Shutdown(SocketShutdown.Both);
+                try { cliente.Send(msg); } catch (Exception e) { }
+                Console.WriteLine("Msg sent " + i);
+                //recibirRespuesta(cliente);
+                Thread.Sleep(1);
+                i++;
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.StackTrace);
-            }
+
+            Console.ReadKey(true);
+            //cliente.Shutdown(SocketShutdown.Both);
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e.StackTrace);
+            //}
 
         }
 
