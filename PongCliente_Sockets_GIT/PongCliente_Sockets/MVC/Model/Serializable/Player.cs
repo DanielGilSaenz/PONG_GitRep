@@ -17,7 +17,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public Point top { get; set; }
         public Point bottom { get; set; }
 
-        public int size { get; set; }
+        private int size { get; set; }
 
         // Directional info: pixel per second, direction +1 == up -1 == down
         public int pps { get; set; } = 3;
@@ -47,6 +47,27 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
 
             if (top.y > maxY) throw new Exception("The position.y is too high and the object cannot be created");
             if (top.y < minY) throw new Exception("The position.y is too low and the object cannot be created");
+        }
+
+        public void reconstruct(Key keyUp, Key keyDown, int maxY, int minY, Point pos, int size)
+        {
+            this.keyUp = keyUp;
+            this.keyDown = keyDown;
+            this.maxY = maxY;
+            this.minY = minY;
+            this.pos = pos;
+            this.size = size;
+
+            top = new Point(pos.x, pos.y + size);
+            bottom = new Point(pos.x, pos.y - 1 - size);
+
+            if (top.y > maxY) throw new Exception("The position.y is too high and the object cannot be created");
+            if (top.y < minY) throw new Exception("The position.y is too low and the object cannot be created");
+        }
+
+        public void changeSize(int newSize)
+        {
+            reconstruct(this.keyUp, this.keyDown, this.maxY, this.minY, this.pos, newSize);
         }
 
         /// <summary> Returns a line that represents the player</summary>

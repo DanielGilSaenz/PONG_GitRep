@@ -39,20 +39,20 @@ namespace PongCliente_Sockets.MVC.Controller
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(List<object> gameObj)
         {
-            menu =          (MenuObj)gameObj[0];
-            menuConfig =    (MenuObj)gameObj[1];
+            menu = (MenuObj)gameObj[0];
+            menuConfig = (MenuObj)gameObj[1];
 
-            frameRate =     (FrameRate)gameObj[2];
+            frameRate = (FrameRate)gameObj[2];
             screenHandler = (ScreenHandler)gameObj[3];
 
-            topWall =       (Wall)gameObj[4];
-            bottomWall =    (Wall)gameObj[5];
+            topWall = (Wall)gameObj[4];
+            bottomWall = (Wall)gameObj[5];
 
-            player1 =       (Player)gameObj[6];
-            player2 =       (Player)gameObj[7];
+            player1 = (Player)gameObj[6];
+            player2 = (Player)gameObj[7];
 
-            ball =          (Ball)gameObj[8];
-            statusBoard =   (StatusBoard)gameObj[9];
+            ball = (Ball)gameObj[8];
+            statusBoard = (StatusBoard)gameObj[9];
 
             //gameObj.Add(menu);
             //gameObj.Add(menuConfig);
@@ -73,7 +73,7 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Shows the menu and returns the selected option </summary>
         public int menuLoop(MenuObj mainMenu)
         {
-            while(true)
+            while (true)
             {
                 screenHandler.menu(mainMenu);
                 ConsoleKey userKey = Console.ReadKey(true).Key;
@@ -85,6 +85,27 @@ namespace PongCliente_Sockets.MVC.Controller
                     return mainMenu.selectedOption;
                 }
             }
+        }
+
+        public void changeIP(ServerConfigParams serverConfigParams)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void changeFPS(FrameRate frameRate)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <returns>The new size</returns>
+        public int changePlayerSize(int size)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void changeMode(ServerConfigParams serverConfigParams)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
@@ -121,13 +142,13 @@ namespace PongCliente_Sockets.MVC.Controller
                 Locks.DRAWING = true;
 
                 // Draws the objects if there has been any change
-                if (!ball.Compare(lastBall))           drawBall(ref ball, ref screenHandler, false);
-                if (!player1.Compare(lastPlayer1))     drawPlayer(ref player1, ref screenHandler, false);
-                if (!player2.Compare(lastPlayer2))     drawPlayer(ref player2, ref screenHandler, false);
-                if (!statusBoard.Compare(lastBoard))   drawScoreboard(ref statusBoard, ref screenHandler, false);
+                if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
+                if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
+                if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
+                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
 
                 // debug purposes
-                if(debugOn)
+                if (debugOn)
                 {
                     if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
                     if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
@@ -176,16 +197,16 @@ namespace PongCliente_Sockets.MVC.Controller
                 Locks.DRAWING = true;
 
                 // Waits for the other theads to stop doing things
-                while (Locks.READING);                
+                while (Locks.READING) ;
                 stopWatch.Start();
-                
+
 
                 // Erases the previous objects if there are any change
-                if (!ball.Compare(lastBall))            drawBall(ref lastBall, ref screenHandler, true);
-                if (!player1.Compare(lastPlayer1))      drawPlayer(ref lastPlayer1, ref screenHandler, true);
-                if (!player2.Compare(lastPlayer2))      drawPlayer(ref lastPlayer2, ref screenHandler, true);
-                if (!statusBoard.Compare(lastBoard))    drawScoreboard(ref lastBoard, ref screenHandler, true);
-                
+                if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
+                if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
+                if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
+                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
+
             }
         }
 
@@ -206,12 +227,12 @@ namespace PongCliente_Sockets.MVC.Controller
             //handel debug
             if (InputHandler.isKeyDown(Key.F3))
             {
-                if(!wasF3Pressed)
+                if (!wasF3Pressed)
                 {
                     debugOn = !debugOn;
                     wasF3Pressed = true;
                 }
-                
+
                 if (!debugOn)
                 {
                     screenHandler.clearLines_V(0, 4);
@@ -240,7 +261,7 @@ namespace PongCliente_Sockets.MVC.Controller
             // Removes the first point, it is the ball current position
             points.RemoveAt(0);
 
-            foreach(Point p in points)
+            foreach (Point p in points)
             {
                 //screenHandler.drawDebug(objs);
                 ball.pos = fPoint.Cast(p);
@@ -305,7 +326,7 @@ namespace PongCliente_Sockets.MVC.Controller
             }
             else
             {
-                
+
                 hundreds = number / 100;
                 tens = (number / 10) - (hundreds * 10);
                 number = number % 10;
@@ -319,13 +340,13 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private void drawBall(ref Ball ball, ref ScreenHandler screenHandler, bool erase)
         {
-            if(erase) screenHandler.drawPoint(Point.Cast(ball.pos), ConsoleColor.Black, Resources.cSpace);
+            if (erase) screenHandler.drawPoint(Point.Cast(ball.pos), ConsoleColor.Black, Resources.cSpace);
             else screenHandler.drawPoint(Point.Cast(ball.pos), ConsoleColor.White, Resources.cBlock);
         }
 
         private void drawPlayer(ref Player player, ref ScreenHandler screenHandler, bool erase)
         {
-            if(erase) screenHandler.drawLine(player.toLine(), ConsoleColor.White, Resources.cSpace);
+            if (erase) screenHandler.drawLine(player.toLine(), ConsoleColor.White, Resources.cSpace);
             else screenHandler.drawLine(player.toLine(), ConsoleColor.White, Resources.cRect);
         }
     }

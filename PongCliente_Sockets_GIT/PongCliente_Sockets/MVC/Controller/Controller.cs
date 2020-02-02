@@ -16,7 +16,7 @@ namespace PongCliente_Sockets.MVC.Controller
     {
         public MenuObj menu;
         public MenuObj menuConfig;
-
+        private FrameRate frameRate;
         public ScreenHandler screenHandler;
         public LoopsHandler loopsHandler;
 
@@ -28,6 +28,8 @@ namespace PongCliente_Sockets.MVC.Controller
         public Ball ball;
         public StatusBoard statusBoard;
 
+        public ServerConfigParams serverConfigParams;
+
         private List<object> gameObj;
 
         public Controller()
@@ -37,27 +39,40 @@ namespace PongCliente_Sockets.MVC.Controller
 
         public void showMenu()
         {
-            // GOTO Label
-            begining:
+        // GOTO Label
+        begining:
 
-                loopsHandler = new LoopsHandler(gameObj);
+            int selected = loopsHandler.menuLoop(menu);
 
-                int selected = loopsHandler.menuLoop(menu);
+            // Option selected is "play"
+            if (selected == 0)
+            {
+                reloadHandler(gameObj);
+                // Clears the menu and draws the top and bottom walls
+                Console.Clear();
+                screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
+                screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
 
-                // Option selected is "play"
-                if (selected == 0)
-                {
-                    // Clears the menu and draws the top and bottom walls
-                    Console.Clear();
-                    screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
-                    screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
+                // Does the loop that handles the game
+                loopsHandler.gameLoop();
+            }
 
-                    // Does the loop that handles the game
-                    loopsHandler.gameLoop();
-                }
+            if (selected == 1) goto configMenu;
+            if (selected == 3) return;
 
-                if (selected == 1) goto begining;
-                if (selected == 3) return;
+            // GOTO lable
+            configMenu:
+
+            selected = loopsHandler.menuLoop(menuConfig);
+
+            switch (selected)
+            {
+                case 0: menu_changeIP(); break;
+                case 1: menu_changeMode(); break;
+                case 2: menu_changeFPS(); break;
+                case 3: menu_changePlayerSize(); break;
+                case 4: goto begining;
+            }
         }
 
         /// <summary> Initializes the objects of the playground </summary>
@@ -68,10 +83,10 @@ namespace PongCliente_Sockets.MVC.Controller
 
             // We create the menus
             menu = new MenuObj(new string[] { "Jugar", "Configuracion", "Salir" }, null, false);
-            menuConfig = new MenuObj(new string[] { "Nombre", "tipo bola", "Velocidad", "Tamaño players", "Salir" }, null, true);
+            menuConfig = new MenuObj(new string[] { "IP del servidor", "Modo Online/Offline", "FPS", "Tamaño players", "Salir" }, null, true);
 
             // Initialize the graphics and the controller
-            FrameRate frameRate = new FrameRate(16);
+            frameRate = new FrameRate(16);
             screenHandler = new ScreenHandler();
 
             // This is the offset on top and bottom of the walls
@@ -111,6 +126,8 @@ namespace PongCliente_Sockets.MVC.Controller
             // Initialize the scoreBoard
             statusBoard = new StatusBoard(new Point(screenHandler.max_W / 2, 3), 0, 0, 10);
 
+            serverConfigParams = new ServerConfigParams(null, ServerConfigParams.Mode.OFFLINE);
+
             gameObj.Add(menu);
             gameObj.Add(menuConfig);
 
@@ -126,10 +143,48 @@ namespace PongCliente_Sockets.MVC.Controller
             gameObj.Add(ball);
             gameObj.Add(statusBoard);
 
-
+            gameObj.Add(serverConfigParams);
 
             return gameObj;
         }
+
+        /// <summary> Allows the user to change the server IP </summary>
+        private void menu_changeIP()
+        {
+            loopsHandler.changeIP(serverConfigParams);
+            reloadHandler(gameObj);
+        }
+
+        /// <summary>Allows the user to change the mode betwen online and offline</summary>
+        private void menu_changeMode()
+        {
+            loopsHandler.changeMode(serverConfigParams);
+            reloadHandler(gameObj);
+        }
+
+        /// <summary>Allows the user to change the FPS</summary>
+        private void menu_changeFPS()
+        {
+            loopsHandler.changeFPS(frameRate);
+            reloadHandler(gameObj);
+        }
+
+        /// <summary>Allows the user to change the size of the players</summary>
+        private void menu_changePlayerSize()
+        {
+            int size = 0;
+            size = loopsHandler.changePlayerSize(size); 
+            player1.changeSize(size);
+            player2.changeSize(size);
+            reloadHandler(gameObj);
+        }
+
+        private void reloadHandler(List<object> gameObj)
+        {
+            // Critical line
+            loopsHandler = new LoopsHandler(gameObj);
+        }
+
 
     }
 }

@@ -119,6 +119,22 @@ namespace PongCliente_Sockets.MVC.View
             
         }
 
+        public void int_menu(int param)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void string_menu(string param)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void enum_menu(Type baseEnum, int value)
+        {
+
+            throw new NotImplementedException();
+        }
+
         /// <summary>Draws a line into the screen, 
         /// allows to configure color of the line and the brush tip used
         /// this is the most efficient for drawing lines</summary>

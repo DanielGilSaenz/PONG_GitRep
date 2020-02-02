@@ -85,6 +85,7 @@
     <Compile Include="MVC\Model\Math Objects\fVector.cs" />
     <Compile Include="Menus\Status.cs" />
     <Compile Include="Menus\WaitingScreen.cs" />
+    <Compile Include="MVC\Model\Serializable\ServerConfigParams.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="MVC\Model\Serializable\Ball.cs" />
     <Compile Include="MVC\Controller\LoopsHandler.cs" />
