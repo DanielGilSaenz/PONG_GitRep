@@ -6,6 +6,7 @@ using PongCliente_Sockets.MVC.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -50,13 +51,21 @@ namespace PongCliente_Sockets.MVC.Controller
             if (selected == 0)
             {
                 reloadHandler(gameObj);
-                // Clears the menu and draws the top and bottom walls
-                Console.Clear();
-                screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
-                screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
 
-                // Does the loop that handles the game
-                loopsHandler.gameLoop();
+                if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
+                {
+
+                }
+                else
+                {
+                    // Clears the menu and draws the top and bottom walls
+                    Console.Clear();
+                    screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
+                    screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
+
+                    // Does the loop that handles the game
+                    loopsHandler.gameLoop();
+                }
             }
 
             else if (selected == 1)
@@ -152,8 +161,17 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Allows the user to change the server IP </summary>
         private void menu_changeIP()
         {
+        begining:
             //loopsHandler.changeIP(serverConfigParams);
-            serverConfigParams.IP = screenHandler.changeValueOf(serverConfigParams.IP, "Server IP");
+            string ipString = screenHandler.changeValueOf(serverConfigParams.IP, "Server IP");
+            IPAddress iPAddress;
+            if (!IPAddress.TryParse(ipString, out iPAddress))
+            {
+                Console.WriteLine("Error of format in the IP");
+                Console.ReadKey(true);
+                goto begining;
+            }
+            serverConfigParams.IP = ipString;
             reloadHandler(gameObj);
             //throw new NotImplementedException();
         }
