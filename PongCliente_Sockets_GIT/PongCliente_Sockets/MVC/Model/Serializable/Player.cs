@@ -17,7 +17,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public Point top { get; set; }
         public Point bottom { get; set; }
 
-        private int size { get; set; }
+        public int size { get; private set; }
 
         // Directional info: pixel per second, direction +1 == up -1 == down
         public int pps { get; set; } = 3;

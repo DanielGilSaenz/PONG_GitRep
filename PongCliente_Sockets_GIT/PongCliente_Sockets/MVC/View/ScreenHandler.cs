@@ -127,6 +127,8 @@ namespace PongCliente_Sockets.MVC.View
             Console.SetCursorPosition(0, 0);
             Console.Write(name + "[actual value: " + param + "]" + " >> ");
             string userInput = Console.ReadLine();
+            if (string.IsNullOrEmpty(userInput)) return param;
+
             try { return int.Parse(userInput); }
             catch (Exception e)
             {
@@ -144,6 +146,8 @@ namespace PongCliente_Sockets.MVC.View
             Console.SetCursorPosition(0, 0);
             Console.Write(name + "[actual value: " + param + "]" + " >> ");
             string userInput = Console.ReadLine();
+            if (string.IsNullOrEmpty(userInput)) return param;
+
             return userInput;
         }
 
@@ -155,6 +159,8 @@ namespace PongCliente_Sockets.MVC.View
             Console.WriteLine("(on/off)");
             Console.Write(name + "[actual value: " + mode.ToString() + "]" + " >> ");
             string userInput = Console.ReadLine();
+            if (string.IsNullOrEmpty(userInput)) return mode;
+
             if (userInput == "on") return ServerConfigParams.Mode.ONLINE;
             else if (userInput == "off") return ServerConfigParams.Mode.OFFLINE;
             else

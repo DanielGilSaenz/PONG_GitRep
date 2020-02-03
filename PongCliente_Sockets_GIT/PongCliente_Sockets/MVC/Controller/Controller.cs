@@ -177,8 +177,9 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Allows the user to change the size of the players</summary>
         private void menu_changePlayerSize()
         {
-            int size = 0;
+            int size = player1.size;
             //size = loopsHandler.changePlayerSize(size); 
+            size = screenHandler.changeValueOf(size, "Player size");
             player1.changeSize(size);
             player2.changeSize(size);
             reloadHandler(gameObj);
