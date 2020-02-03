@@ -70,12 +70,16 @@ namespace PongCliente_Sockets.MVC.Controller
             //gameObj.Add(statusBoard);
         }
 
+        public LoopsHandler()
+        {
+        }
+
         /// <summary>Shows the menu and returns the selected option </summary>
         public int menuLoop(MenuObj mainMenu)
         {
             while (true)
             {
-                screenHandler.menu(mainMenu);
+                screenHandler.drawMenu(mainMenu);
                 ConsoleKey userKey = Console.ReadKey(true).Key;
                 if (userKey == ConsoleKey.UpArrow) mainMenu.optionUp();
                 if (userKey == ConsoleKey.DownArrow) mainMenu.optionDown();
@@ -85,27 +89,6 @@ namespace PongCliente_Sockets.MVC.Controller
                     return mainMenu.selectedOption;
                 }
             }
-        }
-
-        public void changeIP(ServerConfigParams serverConfigParams)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void changeFPS(FrameRate frameRate)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <returns>The new size</returns>
-        public int changePlayerSize(int size)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void changeMode(ServerConfigParams serverConfigParams)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>

@@ -42,6 +42,8 @@ namespace PongCliente_Sockets.MVC.Controller
         // GOTO Label
         begining:
 
+            reloadHandler(gameObj);
+
             int selected = loopsHandler.menuLoop(menu);
 
             // Option selected is "play"
@@ -57,22 +59,21 @@ namespace PongCliente_Sockets.MVC.Controller
                 loopsHandler.gameLoop();
             }
 
-            if (selected == 1) goto configMenu;
-            if (selected == 3) return;
-
-            // GOTO lable
-            configMenu:
-
-            selected = loopsHandler.menuLoop(menuConfig);
-
-            switch (selected)
+            else if (selected == 1)
             {
-                case 0: menu_changeIP(); break;
-                case 1: menu_changeMode(); break;
-                case 2: menu_changeFPS(); break;
-                case 3: menu_changePlayerSize(); break;
-                case 4: goto begining;
+            configMenu:
+                selected = loopsHandler.menuLoop(menuConfig);
+
+                switch (selected)
+                {
+                    case 0: menu_changeIP(); goto configMenu;
+                    case 1: menu_changeMode(); goto configMenu;
+                    case 2: menu_changeFPS(); goto configMenu;
+                    case 3: menu_changePlayerSize(); goto configMenu;
+                    case 4: goto begining;
+                }
             }
+            else if (selected == 2) { statusBoard.gameIsOver = true; return; }
         }
 
         /// <summary> Initializes the objects of the playground </summary>
@@ -151,21 +152,25 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Allows the user to change the server IP </summary>
         private void menu_changeIP()
         {
-            loopsHandler.changeIP(serverConfigParams);
+            //loopsHandler.changeIP(serverConfigParams);
+            serverConfigParams.IP = screenHandler.changeValueOf(serverConfigParams.IP, "Server IP");
             reloadHandler(gameObj);
+            //throw new NotImplementedException();
         }
 
         /// <summary>Allows the user to change the mode betwen online and offline</summary>
         private void menu_changeMode()
         {
-            loopsHandler.changeMode(serverConfigParams);
+            //loopsHandler.changeMode(serverConfigParams);
+            serverConfigParams.mode = screenHandler.changeValueOf(serverConfigParams.mode, "Connection config");
             reloadHandler(gameObj);
         }
 
         /// <summary>Allows the user to change the FPS</summary>
         private void menu_changeFPS()
         {
-            loopsHandler.changeFPS(frameRate);
+            //loopsHandler.changeFPS(frameRate);
+            frameRate.FPS = screenHandler.changeValueOf(frameRate.FPS, "FPS");
             reloadHandler(gameObj);
         }
 
@@ -173,7 +178,7 @@ namespace PongCliente_Sockets.MVC.Controller
         private void menu_changePlayerSize()
         {
             int size = 0;
-            size = loopsHandler.changePlayerSize(size); 
+            //size = loopsHandler.changePlayerSize(size); 
             player1.changeSize(size);
             player2.changeSize(size);
             reloadHandler(gameObj);

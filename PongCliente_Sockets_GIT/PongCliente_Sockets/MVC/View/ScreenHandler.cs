@@ -1,6 +1,7 @@
 ﻿using PongCliente_Sockets.Interfaces;
 using PongCliente_Sockets.Menus;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
+using PongCliente_Sockets.MVC.Model.Serializable;
 using System;
 
 using System.Diagnostics;
@@ -44,7 +45,7 @@ namespace PongCliente_Sockets.MVC.View
         }
 
         /// <summary> Draws the menu </summary>
-        public void menu(MenuObj menu)
+        public void drawMenu(MenuObj menu)
         {
             // Used to know the center of the screen
             int middle_W = max_W / 2;
@@ -119,20 +120,51 @@ namespace PongCliente_Sockets.MVC.View
             
         }
 
-        public void int_menu(int param)
+        public int changeValueOf(int param, string name)
         {
-            throw new NotImplementedException();
+            begining:
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.Write(name + "[actual value: " + param + "]" + " >> ");
+            string userInput = Console.ReadLine();
+            try { return int.Parse(userInput); }
+            catch (Exception e)
+            {
+                Console.WriteLine();
+                Console.Write("Error, try again");
+                Console.ReadKey(false);
+                goto begining;
+            }
+            //throw new NotImplementedException();
         }
 
-        public void string_menu(string param)
+        public string changeValueOf(string param, string name)
         {
-            throw new NotImplementedException();
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.Write(name + "[actual value: " + param + "]" + " >> ");
+            string userInput = Console.ReadLine();
+            return userInput;
         }
 
-        public void enum_menu(Type baseEnum, int value)
+        public ServerConfigParams.Mode changeValueOf( ServerConfigParams.Mode mode, string name)
         {
-
-            throw new NotImplementedException();
+            begining:
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("(on/off)");
+            Console.Write(name + "[actual value: " + mode.ToString() + "]" + " >> ");
+            string userInput = Console.ReadLine();
+            if (userInput == "on") return ServerConfigParams.Mode.ONLINE;
+            else if (userInput == "off") return ServerConfigParams.Mode.OFFLINE;
+            else
+            {
+                Console.WriteLine();
+                Console.WriteLine("Error, try again");
+                Console.ReadKey(true);
+                goto begining;
+            }
+            //throw new NotImplementedException();
         }
 
         /// <summary>Draws a line into the screen, 
