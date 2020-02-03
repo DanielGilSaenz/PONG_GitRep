@@ -16,7 +16,7 @@ namespace PongCliente_Sockets
         {
             // Initialize the controller and gets the statusBoard to know if the game is over
             Controller controller = new Controller();
-            statusBoard = controller.statusBoard;
+            statusBoard = controller.statusBoard;            
 
             // Shows the main menu and gets the option selected (must be changed)
             controller.showMenu();

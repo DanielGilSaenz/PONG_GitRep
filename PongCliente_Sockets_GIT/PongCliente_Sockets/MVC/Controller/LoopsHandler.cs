@@ -197,6 +197,8 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Reads the keys while the screen is not drawing</summary>
         private void handleInput()
         {
+            if (InputHandler.isKeyDown(Key.Escape)) {statusBoard.gameIsOver = true; return; }
+
             //handel player1
             if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
             else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
@@ -254,8 +256,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (HitboxHandler.handleHit(ref ball, ref player2)) break;
                 if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard)) break;
             }
-
-            //throw new NotImplementedException();
         }
 
         /// <summary> Draws the scoreBoard in to the screen </summary>

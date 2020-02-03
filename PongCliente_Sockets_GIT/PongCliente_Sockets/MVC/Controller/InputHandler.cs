@@ -16,6 +16,7 @@ namespace PongCliente_Sockets.MVC.Controller
         public static bool P2_KEY_DOWN { get; set; }
 
         public static bool DEBUG_KEY { get; set; }
+        public static bool ESCAPE_KEY { get; set; }
 
         public static Player player1 { get; set; }
         public static Player player2 { get; set; }
@@ -35,15 +36,26 @@ namespace PongCliente_Sockets.MVC.Controller
             P2_KEY_DOWN = Keyboard.IsKeyDown(player2.keyDown);
 
             DEBUG_KEY = Keyboard.IsKeyDown(Key.F3);
+
+            ESCAPE_KEY = Keyboard.IsKeyDown(Key.Escape);
         }
 
         public static bool isKeyDown(Key key)
         {
-            if (key == player1.keyUp) return P1_KEY_UP;
-            if (key == player1.keyDown) return P1_KEY_DOWN;
-            if (key == player2.keyUp) return P2_KEY_UP;
-            if (key == player2.keyDown) return P2_KEY_DOWN;
+            if(player1 != null)
+            {
+                if (key == player1.keyUp) return P1_KEY_UP;
+                if (key == player1.keyDown) return P1_KEY_DOWN;
+            }
+
+            if (player2 != null)
+            {
+                if (key == player2.keyUp) return P2_KEY_UP;
+                if (key == player2.keyDown) return P2_KEY_DOWN;
+            }
+
             if (key == Key.F3) return DEBUG_KEY;
+            if (key == Key.Escape) return ESCAPE_KEY;
             else return false;
         }
     }

@@ -23,7 +23,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
             ONLINE, OFFLINE
         }
 
-        public string IP { get; set; } = "0.0.0.0";
+        public string IP { get; set; } = "127.0.0.1";
         public Mode mode { get; set; } = Mode.OFFLINE;
     }
 }

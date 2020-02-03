@@ -52,7 +52,9 @@ namespace PongCliente_Sockets.MVC.View
             int middle_H = max_H / 2;
 
             // Used to get the selected word from the menu
-            UserCursor cursor = new UserCursor(menu.Options[menu.selectedOption]);
+            UserCursor cursor = new UserCursor("");
+            if (menu.selectedOption < menu.Options.Length)
+            { cursor = new UserCursor(menu.Options[menu.selectedOption]); }
 
             // This here is to center the words on the screen
             int n_filas = menu.Options.Length;

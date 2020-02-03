@@ -5,8 +5,10 @@ using PongCliente_Sockets.MVC.Model.Serializable;
 using PongCliente_Sockets.MVC.View;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -54,9 +56,10 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-                    // TODO
-                    // screenhandler trying toconnect
-                    // loopshandler mode online, player1 no key controls start thread of tcpclient
+                    if(!connectToServer())
+                    {
+                        goto begining;
+                    }
                 }
                 else
                 {
@@ -85,6 +88,81 @@ namespace PongCliente_Sockets.MVC.Controller
                 }
             }
             else if (selected == 2) { statusBoard.gameIsOver = true; return; }
+        }
+
+        private bool connectToServer()
+        {
+            // TODO
+            // screenhandler trying toconnect
+            // loopshandler mode online, player1 no key controls start thread of tcpclient
+
+            MenuObj waitingMenu = new MenuObj(new string[] { "Waiting to connect to the server", "", "~" }, null, false);
+            waitingMenu.selectedOption = 5;
+
+            string[] waitingCursor = new string[] { "\\", "|", "/", "~" };
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            int i = 0;
+            screenHandler.drawMenu(waitingMenu);
+
+            Int32 port = 8080;
+            try { TcpClient client = new TcpClient(serverConfigParams.IP, port); }
+            catch(ArgumentNullException)
+            {
+                waitingMenu.Options[0] = "Error on the IP, change it and try again";
+                screenHandler.drawMenu(waitingMenu);
+                Console.ReadKey(true);
+                return false;
+            }
+            catch(ArgumentOutOfRangeException)
+            {
+                waitingMenu.Options[0] = "Error on the IP, change it and try again";
+                screenHandler.drawMenu(waitingMenu);
+                Console.ReadKey(true);
+                return false;
+            }
+            catch (SocketException)
+            {
+                waitingMenu.Options[0] = "Error on the server, try again later";
+                screenHandler.drawMenu(waitingMenu);
+                Console.ReadKey(true);
+                return false;
+            }
+            waitingMenu.Options[0] = "Waiting to find a match";
+
+            bool connected = false;
+            int seconds = 0;
+            while (!connected)
+            {
+                if (stopwatch.ElapsedMilliseconds > 1000)
+                {
+                    waitingMenu.Options[2] = waitingCursor[i];
+                    screenHandler.drawMenu(waitingMenu);
+                    if (i < waitingCursor.Length - 1) i++;
+                    else i = 0;
+
+                    stopwatch.Reset();
+                    stopwatch.Start();
+                    seconds++;
+                }
+
+                // Conecction timeout
+                if (seconds >= 30)
+                {
+                    waitingMenu.Options[0] = "Error, too long before response, try again later";
+                    screenHandler.drawMenu(waitingMenu);
+                    Console.ReadKey(true);
+                    return false;
+                }
+            }
+            return connected;
+        }
+
+        private void readEscapeKey()
+        {
+
         }
 
         /// <summary> Initializes the objects of the playground </summary>
@@ -175,13 +253,11 @@ namespace PongCliente_Sockets.MVC.Controller
             }
             serverConfigParams.IP = ipString;
             reloadHandler(gameObj);
-            //throw new NotImplementedException();
         }
 
         /// <summary>Allows the user to change the mode betwen online and offline</summary>
         private void menu_changeMode()
         {
-            //loopsHandler.changeMode(serverConfigParams);
             serverConfigParams.mode = screenHandler.changeValueOf(serverConfigParams.mode, "Connection config");
             reloadHandler(gameObj);
         }
@@ -189,7 +265,6 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Allows the user to change the FPS</summary>
         private void menu_changeFPS()
         {
-            //loopsHandler.changeFPS(frameRate);
             int fps = screenHandler.changeValueOf(frameRate.FPS, "FPS");
             frameRate = new FrameRate(fps);
             reloadHandler(gameObj);
@@ -199,7 +274,6 @@ namespace PongCliente_Sockets.MVC.Controller
         private void menu_changePlayerSize()
         {
             int size = player1.size;
-            //size = loopsHandler.changePlayerSize(size); 
             size = screenHandler.changeValueOf(size, "Player size");
             player1.changeSize(size);
             player2.changeSize(size);
