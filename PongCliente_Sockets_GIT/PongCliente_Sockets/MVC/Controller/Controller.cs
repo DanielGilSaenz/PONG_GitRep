@@ -90,9 +90,6 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Initializes the objects of the playground </summary>
         private List<object> initDefault()
         {
-            // This list is used to make reference to teh objects
-            List<object> gameObj = new List<object>();
-
             // We create the menus
             menu = new MenuObj(new string[] { "Jugar", "Configuracion", "Salir" }, null, false);
             menuConfig = new MenuObj(new string[] { "IP del servidor", "Modo Online/Offline", "FPS", "Tamaño players", "Salir" }, null, true);
@@ -138,7 +135,10 @@ namespace PongCliente_Sockets.MVC.Controller
             // Initialize the scoreBoard
             statusBoard = new StatusBoard(new Point(screenHandler.max_W / 2, 3), 0, 0, 10);
 
-            serverConfigParams = new ServerConfigParams(null, ServerConfigParams.Mode.OFFLINE);
+            serverConfigParams = new ServerConfigParams();
+
+            // This list is used to make reference to teh objects
+            gameObj = new List<object>();
 
             gameObj.Add(menu);
             gameObj.Add(menuConfig);
@@ -190,7 +190,8 @@ namespace PongCliente_Sockets.MVC.Controller
         private void menu_changeFPS()
         {
             //loopsHandler.changeFPS(frameRate);
-            frameRate.FPS = screenHandler.changeValueOf(frameRate.FPS, "FPS");
+            int fps = screenHandler.changeValueOf(frameRate.FPS, "FPS");
+            frameRate = new FrameRate(fps);
             reloadHandler(gameObj);
         }
 
@@ -208,6 +209,25 @@ namespace PongCliente_Sockets.MVC.Controller
         private void reloadHandler(List<object> gameObj)
         {
             // Critical line
+            // This list is used to make reference to teh objects
+            gameObj = new List<object>();
+
+            gameObj.Add(menu);
+            gameObj.Add(menuConfig);
+
+            gameObj.Add(frameRate);
+            gameObj.Add(screenHandler);
+
+            gameObj.Add(topWall);
+            gameObj.Add(bottomWall);
+
+            gameObj.Add(player1);
+            gameObj.Add(player2);
+
+            gameObj.Add(ball);
+            gameObj.Add(statusBoard);
+
+            gameObj.Add(serverConfigParams);
             loopsHandler = new LoopsHandler(gameObj);
         }
 

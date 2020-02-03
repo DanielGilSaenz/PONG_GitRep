@@ -14,12 +14,16 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
             this.mode = mode;
         }
 
+        public ServerConfigParams()
+        {
+        }
+
         public enum Mode
         {
             ONLINE, OFFLINE
         }
 
-        public string IP { get; set; }
+        public string IP { get; set; } = "0.0.0.0";
         public Mode mode { get; set; } = Mode.OFFLINE;
     }
 }

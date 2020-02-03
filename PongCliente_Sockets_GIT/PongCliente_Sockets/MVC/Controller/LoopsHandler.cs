@@ -252,7 +252,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (HitboxHandler.handleHit(ref ball, ref topWall)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player1)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player2)) break;
-                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref statusBoard)) break;
+                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard)) break;
             }
 
             //throw new NotImplementedException();
