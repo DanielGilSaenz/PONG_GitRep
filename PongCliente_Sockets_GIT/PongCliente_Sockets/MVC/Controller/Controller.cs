@@ -54,7 +54,9 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-
+                    // TODO
+                    // screenhandler trying toconnect
+                    // loopshandler mode online, player1 no key controls start thread of tcpclient
                 }
                 else
                 {
