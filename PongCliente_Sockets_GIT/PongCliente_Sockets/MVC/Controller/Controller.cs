@@ -132,9 +132,9 @@ namespace PongCliente_Sockets.MVC.Controller
             }
             waitingMenu.Options[0] = "Waiting to find a match";
 
-            bool connected = false;
+            bool matchFound = false;
             int seconds = 0;
-            while (!connected)
+            while (!matchFound)
             {
                 if (stopwatch.ElapsedMilliseconds > 1000)
                 {
@@ -148,7 +148,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     seconds++;
                 }
 
-                // Conecction timeout
+                // Conection timeout
                 if (seconds >= 30)
                 {
                     waitingMenu.Options[0] = "Error, too long before response, try again later";
@@ -157,7 +157,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     return false;
                 }
             }
-            return connected;
+            return matchFound;
         }
 
         private void readEscapeKey()
