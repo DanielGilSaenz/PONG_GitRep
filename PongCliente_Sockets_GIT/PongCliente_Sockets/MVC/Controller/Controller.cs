@@ -56,7 +56,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-                    if(!connectToServer())
+                    TcpClient client;
+                    if (!connectToServer(out client))
                     {
                         goto begining;
                     }
@@ -90,7 +91,7 @@ namespace PongCliente_Sockets.MVC.Controller
             else if (selected == 2) { statusBoard.gameIsOver = true; return; }
         }
 
-        private bool connectToServer()
+        private bool connectToServer(out TcpClient client)
         {
             // TODO
             // screenhandler trying toconnect
@@ -107,13 +108,14 @@ namespace PongCliente_Sockets.MVC.Controller
             int i = 0;
             screenHandler.drawMenu(waitingMenu);
 
-            Int32 port = 8080;
-            try { TcpClient client = new TcpClient(serverConfigParams.IP, port); }
+            Int32 port = serverConfigParams.PORT;
+            try { client = new TcpClient(serverConfigParams.IP, port); }
             catch(ArgumentNullException)
             {
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
+                client = null;
                 return false;
             }
             catch(ArgumentOutOfRangeException)
@@ -121,6 +123,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
+                client = null;
                 return false;
             }
             catch (SocketException)
@@ -128,6 +131,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 waitingMenu.Options[0] = "Error on the server, try again later";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
+                client = null;
                 return false;
             }
             waitingMenu.Options[0] = "Waiting to find a match";
@@ -154,15 +158,11 @@ namespace PongCliente_Sockets.MVC.Controller
                     waitingMenu.Options[0] = "Error, too long before response, try again later";
                     screenHandler.drawMenu(waitingMenu);
                     Console.ReadKey(true);
-                    return false;
+                    matchFound = false;
+                    break;
                 }
             }
             return matchFound;
-        }
-
-        private void readEscapeKey()
-        {
-
         }
 
         /// <summary> Initializes the objects of the playground </summary>
