@@ -56,8 +56,25 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-                    TcpClient client;
-                    if (!connectToServer(out client))
+                    TcpClient tempClient;
+                    if (!connectToServer(out tempClient))
+                    {
+                        goto begining;
+                    }
+                    else if(tempClient != null)
+                    {
+                        serverConfigParams.tcpClient = tempClient;
+                        reloadHandler(gameObj);
+
+                        // Clears the menu and draws the top and bottom walls
+                        Console.Clear();
+                        screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
+                        screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
+
+                        // Does the loop that handles the game
+                        loopsHandler.gameLoop(true);
+                    }
+                    else
                     {
                         goto begining;
                     }
@@ -70,7 +87,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
 
                     // Does the loop that handles the game
-                    loopsHandler.gameLoop();
+                    loopsHandler.gameLoop(false);
                 }
             }
 
@@ -93,10 +110,6 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private bool connectToServer(out TcpClient client)
         {
-            // TODO
-            // screenhandler trying toconnect
-            // loopshandler mode online, player1 no key controls start thread of tcpclient
-
             MenuObj waitingMenu = new MenuObj(new string[] { "Waiting to connect to the server", "", "~" }, null, false);
             waitingMenu.selectedOption = 5;
 
@@ -147,12 +160,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (Encoding.ASCII.GetString(data) == "MatchFound") matchFound = true;
 
-
-                data = Encoding.ASCII.GetBytes("Im ready!!");
-                stream.Write(data, 0, data.Length);
-                matchFound = true;
-
-
+                // Changes the screen wating icon
                 if (stopwatch.ElapsedMilliseconds > 1000)
                 {
                     waitingMenu.Options[2] = waitingCursor[i];

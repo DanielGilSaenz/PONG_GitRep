@@ -10,5 +10,6 @@ namespace PongCliente_Sockets.Async
     {
         public static bool DRAWING { get; set; } = false;
         public static bool READING { get; set; } = false;
+        public static bool NETWORKING { get; set; } = false;
     }
 }

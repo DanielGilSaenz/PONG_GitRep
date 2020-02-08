@@ -7,7 +7,9 @@ using PongCliente_Sockets.MVC.View;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -22,6 +24,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private List<Key> keysBuffer = new List<Key>();
 
+        private List<Jugada> jugadasPendientes = new List<Jugada>();
+
         private MenuObj menu;
         private MenuObj menuConfig;
 
@@ -35,6 +39,8 @@ namespace PongCliente_Sockets.MVC.Controller
         private Player player2;
         private Ball ball;
         private StatusBoard statusBoard;
+
+        private ServerConfigParams serverConfigParams;
 
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(List<object> gameObj)
@@ -54,20 +60,7 @@ namespace PongCliente_Sockets.MVC.Controller
             ball = (Ball)gameObj[8];
             statusBoard = (StatusBoard)gameObj[9];
 
-            //gameObj.Add(menu);
-            //gameObj.Add(menuConfig);
-
-            //gameObj.Add(frameRate);
-            //gameObj.Add(screenHandler);
-
-            //gameObj.Add(topWall);
-            //gameObj.Add(bottomWall);
-
-            //gameObj.Add(player1);
-            //gameObj.Add(player2);
-
-            //gameObj.Add(ball);
-            //gameObj.Add(statusBoard);
+            serverConfigParams = (ServerConfigParams)gameObj[10];
         }
 
         public LoopsHandler()
@@ -92,17 +85,14 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
-        public void gameLoop()
+        public void gameLoop(bool online)
         {
-            //Task task1 = new Task(() => handleInput());
-            Task task2 = new Task(() => handleFrameByFrame());
-
-            //task1.Start();
-            task2.Start();
+            if (online) { new Task(() => handleOnline()).Start(); }
+            new Task(() => handleFrameByFrame(online)).Start();
         }
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
-        private void handleFrameByFrame()
+        private void handleFrameByFrame(bool online)
         {
             // Initializes the copies of the objects, these are used to
             // keep track of the changes and only draw once wvery change
@@ -158,7 +148,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 // THEN DOES CALCULATIONS
                 // Updates the ball to the new coordinates
                 // Updates the players to the new coordinates
-                handleInput();
+                handleInput(online);
                 updateBall();
 
 
@@ -181,6 +171,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 // Waits for the other theads to stop doing things
                 while (Locks.READING) ;
+                while (Locks.NETWORKING) ;
                 stopWatch.Start();
 
 
@@ -195,14 +186,21 @@ namespace PongCliente_Sockets.MVC.Controller
 
 
         /// <summary> Reads the keys while the screen is not drawing</summary>
-        private void handleInput()
+        private void handleInput(bool online)
         {
             if (InputHandler.isKeyDown(Key.Escape)) {statusBoard.gameIsOver = true; return; }
-
-            //handel player1
-            if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
-            else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
-            else { player1.resetMomentum(); }
+            
+            if(!online)
+            {
+                //handel player1
+                if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
+                else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
+                else { player1.resetMomentum(); }
+            }
+            else
+            {
+                updateJugadas();
+            }
 
             //handel player2
             if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
@@ -223,7 +221,6 @@ namespace PongCliente_Sockets.MVC.Controller
                     screenHandler.clearLines_V(0, 4);
                     drawScoreboard(ref statusBoard, ref screenHandler, false);
                 }
-
             }
             else
             {
@@ -233,11 +230,40 @@ namespace PongCliente_Sockets.MVC.Controller
             //throw new NotImplementedException();
         }
 
+        /// <summary>Acumulates a list of movements in a list</summary>
+        private void handleOnline()
+        {
+            //serverConfigParams.tcpClient;
+            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
+            while (!statusBoard.gameIsOver)
+            {
+                if (!Locks.DRAWING)
+                {
+                    Locks.NETWORKING = true;
+
+
+                    Locks.NETWORKING = false;
+                }
+                else if(Locks.DRAWING)
+                {
+                    string msg = new Jugada().getAttr(new Jugada(player2, ball));
+                    Byte[] bytes = Encoding.ASCII.GetBytes(msg);
+                    stream.Write(bytes,0,bytes.Length);
+                    while (Locks.DRAWING) ;
+                }
+            }
+            
+        }
+
+        /// <summary>Handles player1 pos and updates ball position according to the server</summary>
+        private void updateJugadas()
+        {
+
+        }
+
         /// <summary> Handles the ball hitbox and updates its position accordingly </summary>
         private void updateBall()
         {
-            object[] objs = new object[] { ball, topWall, bottomWall, player1, player2 };
-
             Line lineOfBall = new Line(Point.Cast(ball.pos), new Point((int)ball.pos.x + (int)ball.vector.x, (int)ball.pos.y + (int)ball.vector.y));
 
             // Gets all the points of the line
