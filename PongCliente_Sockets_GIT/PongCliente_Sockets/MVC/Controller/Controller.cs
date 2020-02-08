@@ -135,11 +135,24 @@ namespace PongCliente_Sockets.MVC.Controller
                 return false;
             }
             waitingMenu.Options[0] = "Waiting to find a match";
+            NetworkStream stream = client.GetStream();
+            Byte[] data = new Byte[256];
 
             bool matchFound = false;
             int seconds = 0;
             while (!matchFound)
             {
+                Int32 n_bytes = 0;
+                while (n_bytes <=0) n_bytes = stream.Read(data, 0, data.Length);
+
+                if (Encoding.ASCII.GetString(data) == "MatchFound") matchFound = true;
+
+
+                data = Encoding.ASCII.GetBytes("Im ready!!");
+                stream.Write(data, 0, data.Length);
+                matchFound = true;
+
+
                 if (stopwatch.ElapsedMilliseconds > 1000)
                 {
                     waitingMenu.Options[2] = waitingCursor[i];
