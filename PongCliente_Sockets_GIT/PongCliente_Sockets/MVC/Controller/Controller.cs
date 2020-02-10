@@ -156,9 +156,13 @@ namespace PongCliente_Sockets.MVC.Controller
             while (!matchFound)
             {
                 Int32 n_bytes = 0;
-                while (n_bytes <=0) n_bytes = stream.Read(data, 0, data.Length);
+                //if (n_bytes <=0) n_bytes = stream.Read(data, 0, data.Length);
 
-                if (Encoding.ASCII.GetString(data) == "MatchFound") matchFound = true;
+                if (Encoding.ASCII.GetString(data) == "MatchFound")
+                {
+                    matchFound = true;
+                    break;
+                }
 
                 // Changes the screen wating icon
                 if (stopwatch.ElapsedMilliseconds > 1000)

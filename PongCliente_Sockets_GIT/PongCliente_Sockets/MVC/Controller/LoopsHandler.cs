@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -233,6 +234,10 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Acumulates a list of movements in a list</summary>
         private void handleOnline()
         {
+            Byte[] bytes = new Byte[512];
+            int count = 0;
+            Jugada j = null;
+
             //serverConfigParams.tcpClient;
             NetworkStream stream = serverConfigParams.tcpClient.GetStream();
             while (!statusBoard.gameIsOver)
@@ -240,19 +245,42 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
+                    string str1 = receive(stream, bytes, count);
 
+                    if (str1 != null)
+                    {
+                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); } catch { }
+                        player1.pos = (Point)j.player1.pos.Clone();
+                        ball = (Ball)j.ball.Clone();
+                    }
 
+                    bytes = new Byte[512];
                     Locks.NETWORKING = false;
                 }
                 else if(Locks.DRAWING)
                 {
                     string msg = new Jugada().getAttr(new Jugada(player2, ball));
-                    Byte[] bytes = Encoding.ASCII.GetBytes(msg);
+                    bytes = Encoding.ASCII.GetBytes(msg);
                     stream.Write(bytes,0,bytes.Length);
+                    bytes = new Byte[512];
                     while (Locks.DRAWING) ;
                 }
             }
             
+        }
+
+        /// <summary>Checks if there is something to recieve </summary>
+        private string receive(NetworkStream stream, Byte[] bytes, int count)
+        {
+            if ((count = stream.Read(bytes, 0, bytes.Length)) != 0)
+            {
+                // Translate data bytes to a ASCII string.
+                return Encoding.ASCII.GetString(bytes, 0, count);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>Handles player1 pos and updates ball position according to the server</summary>
