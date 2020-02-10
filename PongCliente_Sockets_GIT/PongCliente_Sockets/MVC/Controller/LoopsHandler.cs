@@ -4,6 +4,7 @@ using PongCliente_Sockets.MVC.Controller;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using PongCliente_Sockets.MVC.Model.Serializable;
 using PongCliente_Sockets.MVC.View;
+using PongServidor_Sockets.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,6 +43,8 @@ namespace PongCliente_Sockets.MVC.Controller
         private StatusBoard statusBoard;
 
         private ServerConfigParams serverConfigParams;
+
+        private RecieverHandler recieverHandler;
 
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(List<object> gameObj)
@@ -240,18 +243,19 @@ namespace PongCliente_Sockets.MVC.Controller
 
             //serverConfigParams.tcpClient;
             NetworkStream stream = serverConfigParams.tcpClient.GetStream();
+            recieverHandler = new RecieverHandler(stream, bytes);
+
             while (!statusBoard.gameIsOver)
             {
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
-                    string str1 = receive(stream, bytes, count);
+                    string str1 = recieverHandler.getMsg();
 
                     if (str1 != null)
                     {
                         try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); } catch { }
-                        player1.pos = (Point)j.player1.pos.Clone();
-                        ball = (Ball)j.ball.Clone();
+                        if(j != null)jugadasPendientes.Add(j);
                     }
 
                     bytes = new Byte[512];
@@ -259,34 +263,31 @@ namespace PongCliente_Sockets.MVC.Controller
                 }
                 else if(Locks.DRAWING)
                 {
-                    string msg = new Jugada().getAttr(new Jugada(player2, ball));
-                    bytes = Encoding.ASCII.GetBytes(msg);
-                    stream.Write(bytes,0,bytes.Length);
-                    bytes = new Byte[512];
-                    while (Locks.DRAWING) ;
+                    new Task(() =>
+                    {
+                        string msg = new Jugada().getAttr(new Jugada(player2, ball));
+                        bytes = Encoding.ASCII.GetBytes(msg);
+                        stream.Write(bytes, 0, bytes.Length);
+                        bytes = new Byte[512];
+                    }).Start();                    
+                    while (Locks.DRAWING);
                 }
             }
             
         }
 
-        /// <summary>Checks if there is something to recieve </summary>
-        private string receive(NetworkStream stream, Byte[] bytes, int count)
-        {
-            if ((count = stream.Read(bytes, 0, bytes.Length)) != 0)
-            {
-                // Translate data bytes to a ASCII string.
-                return Encoding.ASCII.GetString(bytes, 0, count);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         /// <summary>Handles player1 pos and updates ball position according to the server</summary>
         private void updateJugadas()
         {
-
+            if(jugadasPendientes.Count > 0)
+            {
+                foreach(Jugada j in jugadasPendientes)
+                {
+                    player1.pos = (Point)j.player1.pos.Clone();
+                    ball = (Ball)j.ball.Clone();
+                }
+                jugadasPendientes.RemoveRange(0, jugadasPendientes.Count);
+            }
         }
 
         /// <summary> Handles the ball hitbox and updates its position accordingly </summary>

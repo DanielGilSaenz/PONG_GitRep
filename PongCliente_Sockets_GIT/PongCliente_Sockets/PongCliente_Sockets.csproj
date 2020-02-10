@@ -81,6 +81,7 @@
     <Compile Include="MVC\Controller\Controller.cs" />
     <Compile Include="MVC\Controller\HitboxHandler.cs" />
     <Compile Include="MVC\Controller\InputHandler.cs" />
+    <Compile Include="MVC\Controller\RecieverHandler.cs" />
     <Compile Include="MVC\Model\Math Objects\fPoint.cs" />
     <Compile Include="MVC\Model\Math Objects\fVector.cs" />
     <Compile Include="Menus\Status.cs" />

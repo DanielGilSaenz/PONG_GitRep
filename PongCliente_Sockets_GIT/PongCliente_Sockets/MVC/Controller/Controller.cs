@@ -3,6 +3,7 @@ using PongCliente_Sockets.Menus;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using PongCliente_Sockets.MVC.Model.Serializable;
 using PongCliente_Sockets.MVC.View;
+using PongServidor_Sockets.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,6 +33,8 @@ namespace PongCliente_Sockets.MVC.Controller
         public StatusBoard statusBoard;
 
         public ServerConfigParams serverConfigParams;
+
+        private RecieverHandler recieverHandler;
 
         private List<object> gameObj;
 
@@ -151,14 +154,26 @@ namespace PongCliente_Sockets.MVC.Controller
             NetworkStream stream = client.GetStream();
             Byte[] data = new Byte[256];
 
+            recieverHandler = new RecieverHandler(stream, data);
+            string msg;
+
             bool matchFound = false;
             int seconds = 0;
             while (!matchFound)
             {
-                Int32 n_bytes = 0;
-                //if (n_bytes <=0) n_bytes = stream.Read(data, 0, data.Length);
+                if (!recieverHandler.isRunning())
+                {
+                    waitingMenu.Options[0] = "Error the server has disconnected";
+                    screenHandler.drawMenu(waitingMenu);
+                    while(Console.ReadKey().Key != ConsoleKey.Enter);
+                    matchFound = false;
+                    break;
+                }
 
-                if (Encoding.ASCII.GetString(data) == "MatchFound")
+                Int32 n_bytes = 0;
+                msg = recieverHandler.getMsg();
+
+                if (msg == "MatchFound")
                 {
                     matchFound = true;
                     break;
@@ -178,11 +193,11 @@ namespace PongCliente_Sockets.MVC.Controller
                 }
 
                 // Conection timeout
-                if (seconds >= 30)
+                if (seconds >= serverConfigParams.TIMEOUT)
                 {
                     waitingMenu.Options[0] = "Error, too long before response, try again later";
                     screenHandler.drawMenu(waitingMenu);
-                    Console.ReadKey(true);
+                    while (Console.ReadKey().Key != ConsoleKey.Enter) ;
                     matchFound = false;
                     break;
                 }

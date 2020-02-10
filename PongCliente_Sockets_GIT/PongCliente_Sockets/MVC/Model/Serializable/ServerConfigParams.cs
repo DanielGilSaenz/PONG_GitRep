@@ -27,6 +27,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public string IP { get; set; } = "127.0.0.1";
         public Int32 PORT { get; set; } = 8080;
         public Mode mode { get; set; } = Mode.ONLINE;
+        public int TIMEOUT { get; set; } = 30;
 
         public TcpClient tcpClient { get; set; }
     }
