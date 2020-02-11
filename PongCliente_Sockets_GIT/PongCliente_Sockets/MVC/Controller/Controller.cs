@@ -154,14 +154,14 @@ namespace PongCliente_Sockets.MVC.Controller
             NetworkStream stream = client.GetStream();
             Byte[] data = new Byte[256];
 
-            recieverHandler = new RecieverHandler(stream, data);
+            recieverHandler = new RecieverHandler(stream, data, statusBoard);
             string msg;
 
             bool matchFound = false;
             int seconds = 0;
             while (!matchFound)
             {
-                if (!recieverHandler.isRunning())
+                if (recieverHandler.isSomethingWrong())
                 {
                     waitingMenu.Options[0] = "Error the server has disconnected";
                     screenHandler.drawMenu(waitingMenu);

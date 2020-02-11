@@ -185,6 +185,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
                 if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
 
+                if (online) { if ((!ball.Compare(lastBall)) || (!player1.Compare(lastPlayer1))) sendJugada(); }
             }
         }
 
@@ -196,20 +197,21 @@ namespace PongCliente_Sockets.MVC.Controller
             
             if(!online)
             {
-                //handel player1
-                if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
-                else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
-                else { player1.resetMomentum(); }
+                //handel player2
+                if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
+                else if (InputHandler.isKeyDown(player2.keyDown)) player2.updatePos(player2.keyDown);
+                else { player2.resetMomentum(); }
             }
             else
             {
                 updateJugadas();
             }
 
-            //handel player2
-            if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
-            else if (InputHandler.isKeyDown(player2.keyDown)) player2.updatePos(player2.keyDown);
-            else { player2.resetMomentum(); }
+            //handel player1
+            if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
+            else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
+            else { player1.resetMomentum(); }
+            
 
             //handel debug
             if (InputHandler.isKeyDown(Key.F3))
@@ -243,10 +245,11 @@ namespace PongCliente_Sockets.MVC.Controller
 
             //serverConfigParams.tcpClient;
             NetworkStream stream = serverConfigParams.tcpClient.GetStream();
-            recieverHandler = new RecieverHandler(stream, bytes);
+            recieverHandler = new RecieverHandler(stream, bytes, statusBoard);
 
             while (!statusBoard.gameIsOver)
             {
+
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
@@ -261,19 +264,25 @@ namespace PongCliente_Sockets.MVC.Controller
                     bytes = new Byte[512];
                     Locks.NETWORKING = false;
                 }
-                else if(Locks.DRAWING)
-                {
-                    new Task(() =>
-                    {
-                        string msg = new Jugada().getAttr(new Jugada(player2, ball));
-                        bytes = Encoding.ASCII.GetBytes(msg);
-                        stream.Write(bytes, 0, bytes.Length);
-                        bytes = new Byte[512];
-                    }).Start();                    
-                    while (Locks.DRAWING);
-                }
             }
-            
+        }
+
+        /// <summary>Sends the current status of the objects to the server</summary>
+        private void sendJugada()
+        {
+            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
+
+            Byte[] bytes = new Byte[512];
+            int count = 0;
+            Jugada j = null;
+
+            new Task(() =>
+            {
+                string msg = new Jugada().getAttr(new Jugada(player1, ball));
+                bytes = Encoding.ASCII.GetBytes(msg);
+                stream.Write(bytes, 0, bytes.Length);
+                bytes = new Byte[512];
+            }).Start();
         }
 
         /// <summary>Handles player1 pos and updates ball position according to the server</summary>
@@ -283,7 +292,7 @@ namespace PongCliente_Sockets.MVC.Controller
             {
                 foreach(Jugada j in jugadasPendientes)
                 {
-                    player1.pos = (Point)j.player1.pos.Clone();
+                    player2.pos = (Point)j.player.pos.Clone();
                     ball = (Ball)j.ball.Clone();
                 }
                 jugadasPendientes.RemoveRange(0, jugadasPendientes.Count);

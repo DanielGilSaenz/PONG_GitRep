@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PongCliente_Sockets.MVC.Model.Serializable;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -11,11 +12,14 @@ namespace PongServidor_Sockets.Controller
     {
         private string msg;
 
-        private bool stop = false;
+        private bool error = false;
 
-        public RecieverHandler(NetworkStream stream, Byte[] bytes)
+        private StatusBoard statusBoard;
+
+        public RecieverHandler(NetworkStream stream, Byte[] bytes, StatusBoard statusBoard)
         {
             startReading(stream, bytes);
+            this.statusBoard = statusBoard;
         }
 
         public string getMsg()
@@ -32,9 +36,10 @@ namespace PongServidor_Sockets.Controller
             }
         }
 
-        public bool isRunning()
+        public bool isSomethingWrong()
         {
-            return !stop;
+            if (error) { error = false; return true; }
+            else return error;
         }
 
         private void startReading(NetworkStream stream, Byte[] bytes)
@@ -43,7 +48,7 @@ namespace PongServidor_Sockets.Controller
 
             new Task(() =>
             {
-                while (!stop)
+                while (!statusBoard.gameIsOver)
                 {
                     try
                     {
@@ -52,7 +57,7 @@ namespace PongServidor_Sockets.Controller
                     }
                     catch(System.IO.IOException)
                     {
-                        stop = true;
+                        error = true;
                     }
                     
                 }
