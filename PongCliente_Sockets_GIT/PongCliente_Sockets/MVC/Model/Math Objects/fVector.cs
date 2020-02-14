@@ -18,6 +18,10 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
             this.y = y;
         }
 
+        public fVector()
+        {
+        }
+
         public double Length()
         {
             return Math.Sqrt(x * x + y * y);

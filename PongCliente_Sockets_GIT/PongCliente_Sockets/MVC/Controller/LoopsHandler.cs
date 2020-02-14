@@ -114,7 +114,6 @@ namespace PongCliente_Sockets.MVC.Controller
             while (statusBoard.gameIsOver == false)
             {
 
-
                 // Locks the other theads
                 Locks.DRAWING = true;
 
@@ -127,18 +126,28 @@ namespace PongCliente_Sockets.MVC.Controller
                 // debug purposes
                 if (debugOn)
                 {
-                    if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
-                    if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
-                    if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
+                    
+                        
+                        if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
+                        if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
+                        if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
 
-                    screenHandler.drawDebug(player1, 0, 0);
-                    screenHandler.drawDebug(player1, 0, 0);
+                        screenHandler.drawDebug(player1, 0, 0);
+                        screenHandler.drawDebug(player1, 0, 0);
 
-                    screenHandler.drawDebug(player2, 0, 1);
-                    screenHandler.drawDebug(player2, 0, 1);
+                        screenHandler.drawDebug(player2, 0, 1);
+                        screenHandler.drawDebug(player2, 0, 1);
 
-                    screenHandler.drawDebug(ball, 0, 2);
-                    screenHandler.drawDebug(ball, 0, 2);
+                        screenHandler.drawDebug(ball, 0, 2);
+                        screenHandler.drawDebug(ball, 0, 2);
+
+                    int i = 3;
+                    foreach (Jugada j in jugadasPendientes)
+                    {
+                        screenHandler.drawDebug(j, 0, i);
+                        screenHandler.drawDebug(j, 0, i);
+                        i++;
+                    }
 
                 }
 
@@ -232,8 +241,6 @@ namespace PongCliente_Sockets.MVC.Controller
             {
                 wasF3Pressed = false;
             }
-
-            //throw new NotImplementedException();
         }
 
         /// <summary>Acumulates a list of movements in a list</summary>
@@ -257,7 +264,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
                     if (str1 != null)
                     {
-                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); } catch { }
+                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); } catch(Exception e) { Debug.WriteLine(str1 + ":" + e.Message); }
                         if(j != null)jugadasPendientes.Add(j);
                     }
 

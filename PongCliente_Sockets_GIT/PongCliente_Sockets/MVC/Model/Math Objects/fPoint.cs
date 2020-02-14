@@ -19,6 +19,10 @@ namespace PongCliente_Sockets.MVC.Model.Math_Objects
             this.y = y;
         }
 
+        public fPoint()
+        {
+        }
+
         public bool bothZero()
         {
             if ((x == 0) && (y == 0)) return true;
