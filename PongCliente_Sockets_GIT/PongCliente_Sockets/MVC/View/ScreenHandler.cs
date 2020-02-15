@@ -132,7 +132,7 @@ namespace PongCliente_Sockets.MVC.View
             if (string.IsNullOrEmpty(userInput)) return param;
 
             try { return int.Parse(userInput); }
-            catch (Exception e)
+            catch
             {
                 Console.WriteLine();
                 Console.Write("Error, try again");

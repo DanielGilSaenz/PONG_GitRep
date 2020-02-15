@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace PongCliente_Sockets
 {
-    
+
     class Program
     {
         public static StatusBoard statusBoard;
@@ -14,19 +14,20 @@ namespace PongCliente_Sockets
         [STAThread]
         static void Main(string[] args)
         {
-            // Initialize the controller and gets the statusBoard to know if the game is over
-            Controller controller = new Controller();
-            statusBoard = controller.statusBoard;            
+            
+                // Initialize the controller and gets the statusBoard to know if the game is over
+                Controller controller = new Controller();
+                statusBoard = controller.statusBoard;
 
-            // Shows the main menu and gets the option selected (must be changed)
-            controller.showMenu();
+                // Shows the main menu and gets the option selected (must be changed)
+                controller.showMenu();
 
-            InputHandler inputHandler = new InputHandler(controller.player1, controller.player2);
+                InputHandler inputHandler = new InputHandler(controller.player1, controller.player2);
 
-            while (statusBoard.gameIsOver == false)
-            {
-                inputHandler.handleKeyboard();
-            }
+                while (statusBoard.gameIsOver == false)
+                {
+                    inputHandler.handleKeyboard();
+                }
             
         }
     }

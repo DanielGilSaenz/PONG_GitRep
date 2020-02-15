@@ -91,13 +91,15 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Distributes the work betwen the async tasks </summary>
         public void gameLoop(bool online)
         {
-            if (online) { new Task(() => handleOnline()).Start(); }
+            if (online) { new Task(() => readFromHttp()).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
         }
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
         private void handleFrameByFrame(bool online)
         {
+
+
             // Initializes the copies of the objects, these are used to
             // keep track of the changes and only draw once wvery change
             Ball lastBall = null;
@@ -110,24 +112,26 @@ namespace PongCliente_Sockets.MVC.Controller
             Stopwatch stopWatch = new Stopwatch();
             TimeSpan delay;
 
+
             stopWatch.Start();
             while (statusBoard.gameIsOver == false)
             {
-
-                // Locks the other theads
-                Locks.DRAWING = true;
-
-                // Draws the objects if there has been any change
-                if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
-                if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
-                if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
-                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
-
-                // debug purposes
-                if (debugOn)
+                try
                 {
-                    
-                        
+                    // Locks the other theads
+                    Locks.DRAWING = true;
+
+                    // Draws the objects if there has been any change
+                    if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
+                    if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
+                    if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
+                    if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
+
+                    // debug purposes
+                    if (debugOn)
+                    {
+
+
                         if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
                         if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
                         if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
@@ -141,70 +145,84 @@ namespace PongCliente_Sockets.MVC.Controller
                         screenHandler.drawDebug(ball, 0, 2);
                         screenHandler.drawDebug(ball, 0, 2);
 
-                    int i = 3;
-                    foreach (Jugada j in jugadasPendientes)
+                        int i = 3;
+                        foreach (Jugada j in jugadasPendientes)
+                        {
+                            screenHandler.drawDebug(j, 0, i);
+                            screenHandler.drawDebug(j, 0, i);
+                            i++;
+                        }
+
+                    }
+
+                    // Keeps a register of the objects to erase later
+                    lastBall = (Ball)ball.Clone();
+                    lastPlayer1 = (Player)player1.Clone();
+                    lastPlayer2 = (Player)player2.Clone();
+                    lastBoard = (StatusBoard)statusBoard.Clone();
+
+
+                    // THEN DOES CALCULATIONS
+                    // Updates the ball to the new coordinates
+                    // Updates the players to the new coordinates
+                    handleInput(online);
+                    updateBall(online);
+
+
+                    // Unlocks the other theads
+                    Locks.DRAWING = false;
+                    stopWatch.Stop();
+
+                    // Wait Till the next frame
+                    delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
+                    if (delay.Milliseconds > 0) Thread.Sleep(delay);
+                    frameRate.actualFrame++;
+                    //Thread.Sleep(100);
+
+                    // To reset the actual frame if it is over the max FPS
+                    if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
+                    stopWatch.Reset();
+
+                    // locks the other theads
+                    Locks.DRAWING = true;
+
+                    // Waits for the other theads to stop doing things
+                    while (Locks.READING) ;
+                    while (Locks.NETWORKING) ;
+                    stopWatch.Start();
+
+
+                    // Erases the previous objects if there are any change
+                    if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
+                    if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
+                    if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
+                    if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
+
+                    if (online)
                     {
-                        screenHandler.drawDebug(j, 0, i);
-                        screenHandler.drawDebug(j, 0, i);
-                        i++;
+                        if (!player1.Compare(lastPlayer1))
+                        {
+                            sendJugada(false, false);
+                        }
                     }
 
                 }
 
-                // Keeps a register of the objects to erase later
-                lastBall = (Ball)ball.Clone();
-                lastPlayer1 = (Player)player1.Clone();
-                lastPlayer2 = (Player)player2.Clone();
-                lastBoard = (StatusBoard)statusBoard.Clone();
-
-
-                // THEN DOES CALCULATIONS
-                // Updates the ball to the new coordinates
-                // Updates the players to the new coordinates
-                handleInput(online);
-                updateBall();
-
-
-                // Unlocks the other theads
-                Locks.DRAWING = false;
-                stopWatch.Stop();
-
-                // Wait Till the next frame
-                delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
-                if (delay.Milliseconds > 0) Thread.Sleep(delay);
-                frameRate.actualFrame++;
-                //Thread.Sleep(100);
-
-                // To reset the actual frame if it is over the max FPS
-                if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
-                stopWatch.Reset();
-
-                // locks the other theads
-                Locks.DRAWING = true;
-
-                // Waits for the other theads to stop doing things
-                while (Locks.READING) ;
-                while (Locks.NETWORKING) ;
-                stopWatch.Start();
-
-
-                // Erases the previous objects if there are any change
-                if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
-                if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
-                if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
-                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
-
-                if (online) { if ((!ball.Compare(lastBall)) || (!player1.Compare(lastPlayer1))) sendJugada(); }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
             }
+
         }
 
 
         /// <summary> Reads the keys while the screen is not drawing</summary>
         private void handleInput(bool online)
         {
-            if (InputHandler.isKeyDown(Key.Escape)) {statusBoard.gameIsOver = true; return; }
-            
-            if(!online)
+            if (InputHandler.isKeyDown(Key.Escape)) { statusBoard.gameIsOver = true; return; }
+
+            if (online == false)
             {
                 //handel player2
                 if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
@@ -220,7 +238,7 @@ namespace PongCliente_Sockets.MVC.Controller
             if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
             else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
             else { player1.resetMomentum(); }
-            
+
 
             //handel debug
             if (InputHandler.isKeyDown(Key.F3))
@@ -243,11 +261,10 @@ namespace PongCliente_Sockets.MVC.Controller
             }
         }
 
-        /// <summary>Acumulates a list of movements in a list</summary>
-        private void handleOnline()
+        /// <summary>Acumulates a list of movements in a list from the data passed by http</summary>
+        private void readFromHttp()
         {
             Byte[] bytes = new Byte[512];
-            int count = 0;
             Jugada j = null;
 
             //serverConfigParams.tcpClient;
@@ -264,8 +281,12 @@ namespace PongCliente_Sockets.MVC.Controller
 
                     if (str1 != null)
                     {
-                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); } catch(Exception e) { Debug.WriteLine(str1 + ":" + e.Message); }
-                        if(j != null)jugadasPendientes.Add(j);
+                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine(str1 + ":" + e.Message);
+                        }
+                        if (j != null) jugadasPendientes.Add(j);
                     }
 
                     bytes = new Byte[512];
@@ -275,17 +296,21 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary>Sends the current status of the objects to the server</summary>
-        private void sendJugada()
+        private void sendJugada(bool updateBall, bool updateStatusBoard)
         {
             NetworkStream stream = serverConfigParams.tcpClient.GetStream();
 
             Byte[] bytes = new Byte[512];
-            int count = 0;
             Jugada j = null;
 
             new Task(() =>
             {
-                string msg = new Jugada().getAttr(new Jugada(player1, ball));
+                j = new Jugada(player1, null, null);
+                if (updateBall) j.ball = ball;
+                if (updateStatusBoard) j.statusBoard = statusBoard;
+
+
+                string msg = j.getAttr(j);
                 bytes = Encoding.ASCII.GetBytes(msg);
                 stream.Write(bytes, 0, bytes.Length);
                 bytes = new Byte[512];
@@ -295,19 +320,25 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Handles player1 pos and updates ball position according to the server</summary>
         private void updateJugadas()
         {
-            if(jugadasPendientes.Count > 0)
+            if (jugadasPendientes.Count > 0)
             {
-                foreach(Jugada j in jugadasPendientes)
+                foreach (Jugada j in jugadasPendientes)
                 {
-                    player2.pos = (Point)j.player.pos.Clone();
-                    ball = (Ball)j.ball.Clone();
+                    if (j.player != null)
+                    {
+                        player2.pos.y = j.player.pos.y;
+                        player2.top.y = j.player.top.y;
+                        player2.bottom.y = j.player.bottom.y;
+                    }
+                    if (j.ball != null) ball = (Ball)j.ball.Clone();
+                    if (j.statusBoard != null) statusBoard = (StatusBoard)j.statusBoard.Clone();
                 }
                 jugadasPendientes.RemoveRange(0, jugadasPendientes.Count);
             }
         }
 
         /// <summary> Handles the ball hitbox and updates its position accordingly </summary>
-        private void updateBall()
+        private void updateBall(bool online)
         {
             Line lineOfBall = new Line(Point.Cast(ball.pos), new Point((int)ball.pos.x + (int)ball.vector.x, (int)ball.pos.y + (int)ball.vector.y));
 
@@ -325,7 +356,11 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (HitboxHandler.handleHit(ref ball, ref topWall)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player1)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player2)) break;
-                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard)) break;
+                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard))
+                {
+                    if (online) sendJugada(true, true);
+                    break;
+                }
             }
         }
 

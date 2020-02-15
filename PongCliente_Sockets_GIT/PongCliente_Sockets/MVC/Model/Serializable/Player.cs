@@ -45,8 +45,8 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
             top = new Point(pos.x, pos.y + size);
             bottom = new Point(pos.x, pos.y - 1 - size);
 
-            if (top.y > maxY) throw new Exception("The position.y is too high and the object cannot be created");
-            if (top.y < minY) throw new Exception("The position.y is too low and the object cannot be created");
+            //if (top.y > maxY) throw new Exception("The position.y is too high and the object cannot be created");
+            //if (top.y < minY) throw new Exception("The position.y is too low and the object cannot be created");
         }
 
         public void reconstruct(Key keyUp, Key keyDown, int maxY, int minY, Point pos, int size)

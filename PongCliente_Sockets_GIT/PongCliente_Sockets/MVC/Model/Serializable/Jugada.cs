@@ -13,13 +13,15 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         {
         }
 
-        public Jugada(Player player, Ball ball)
+        public Jugada(Player player, Ball ball, StatusBoard statusBoard)
         {
             this.player = player;
             this.ball = ball;
+            this.statusBoard = statusBoard;
         }
 
         public Player player { get; set; }
         public Ball ball { get; set; }
+        public StatusBoard statusBoard { get; set; }
     }
 }

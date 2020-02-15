@@ -85,6 +85,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 else
                 {
                     // Clears the menu and draws the top and bottom walls
+                    reloadHandler(gameObj);
                     Console.Clear();
                     screenHandler.drawLine(topWall.line, ConsoleColor.White, Resources.cRect);
                     screenHandler.drawLine(bottomWall.line, ConsoleColor.White, Resources.cRect);
@@ -170,7 +171,6 @@ namespace PongCliente_Sockets.MVC.Controller
                     break;
                 }
 
-                Int32 n_bytes = 0;
                 msg = recieverHandler.getMsg();
 
                 if (msg == "MatchFound")
@@ -213,7 +213,7 @@ namespace PongCliente_Sockets.MVC.Controller
             menuConfig = new MenuObj(new string[] { "IP del servidor", "Modo Online/Offline", "FPS", "Tamaño players", "Salir" }, null, true);
 
             // Initialize the graphics and the controller
-            frameRate = new FrameRate(16);
+            frameRate = new FrameRate(12);
             screenHandler = new ScreenHandler();
 
             // This is the offset on top and bottom of the walls
