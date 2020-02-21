@@ -70,6 +70,8 @@ namespace PongCliente_Sockets.MVC.Controller
                         // --------------------------------------------------------------------------------------------------------------------------------->>>>>>> See you in space cowboy ...
                         /* Ggg5ZAALue4WxnLtlr6H KFgx9aOOH0VWBd0FMvxi Fhe9UmmGkX6SNFpUhYJT xThLJ9iFSUngIYcBGCme 3otCmas6Db4NrDV9Cl4x */
                         // Hay que configurar las teclas del player correspondiente segun decida el servidor
+                        // Al empezar una partida, el server decidira quien es el p1 y quien es el p2, para que durante la partida
+                        // no haya que efecto espejo y los dos jugadores vean la misma pantalla
                         reloadHandler(gameObj);
 
                         // Clears the menu and draws the top and bottom walls
