@@ -67,6 +67,9 @@ namespace PongCliente_Sockets.MVC.Controller
                     else if(tempClient != null)
                     {
                         serverConfigParams.tcpClient = tempClient;
+                        // --------------------------------------------------------------------------------------------------------------------------------->>>>>>> See you in space cowboy ...
+                        /* Ggg5ZAALue4WxnLtlr6H KFgx9aOOH0VWBd0FMvxi Fhe9UmmGkX6SNFpUhYJT xThLJ9iFSUngIYcBGCme 3otCmas6Db4NrDV9Cl4x */
+                        // Hay que configurar las teclas del player correspondiente segun decida el servidor
                         reloadHandler(gameObj);
 
                         // Clears the menu and draws the top and bottom walls
