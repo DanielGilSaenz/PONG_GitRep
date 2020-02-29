@@ -8,6 +8,9 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
     [Serializable]
     class Player : Mostrar, ICloneable, ICompareBool
     {
+        // Marks the player to be controlled by http
+        public bool online { get; set; }
+
         // Is the cealing and the floor limit for the player
         public int maxY { get; set; }
         public int minY { get; set; }

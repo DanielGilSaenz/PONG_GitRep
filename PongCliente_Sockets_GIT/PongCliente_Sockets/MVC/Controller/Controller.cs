@@ -67,11 +67,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     else if(tempClient != null)
                     {
                         serverConfigParams.tcpClient = tempClient;
-                        // --------------------------------------------------------------------------------------------------------------------------------->>>>>>> See you in space cowboy ...
-                        /* Ggg5ZAALue4WxnLtlr6H KFgx9aOOH0VWBd0FMvxi Fhe9UmmGkX6SNFpUhYJT xThLJ9iFSUngIYcBGCme 3otCmas6Db4NrDV9Cl4x */
-                        // Hay que configurar las teclas del player correspondiente segun decida el servidor
-                        // Al empezar una partida, el server decidira quien es el p1 y quien es el p2, para que durante la partida
-                        // no haya que efecto espejo y los dos jugadores vean la misma pantalla
+                        // TODO Hay que configurar que player es controlado por http
                         reloadHandler(gameObj);
 
                         // Clears the menu and draws the top and bottom walls
@@ -180,6 +176,19 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (msg == "MatchFound")
                 {
+                    send(stream, "OK");
+                    string playernumber = null;
+                    while (playernumber == null)
+                    {
+                        playernumber = recieverHandler.getMsg();
+                    }
+
+                    // TODO eso tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
+                    if (playernumber == "p1") player1.online = true;
+                    else if (playernumber == "p2") player2.online = true;
+                    else throw new Exception("The player has not been decided, error comunicating with the server");
+
+                    send(stream, "OK");
                     matchFound = true;
                     break;
                 }
@@ -350,6 +359,15 @@ namespace PongCliente_Sockets.MVC.Controller
             loopsHandler = new LoopsHandler(gameObj);
         }
 
-
+        /// <summary>http method If the msg is not null, tries to send it</summary>
+        private static void send(NetworkStream stream, string msg)
+        {
+            if (!string.IsNullOrEmpty(msg))
+            {
+                //Debug.WriteLine(msg);
+                byte[] bytes = Encoding.ASCII.GetBytes(msg);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
     }
 }

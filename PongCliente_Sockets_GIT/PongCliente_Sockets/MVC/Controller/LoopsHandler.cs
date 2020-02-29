@@ -218,27 +218,33 @@ namespace PongCliente_Sockets.MVC.Controller
 
 
         /// <summary> Reads the keys while the screen is not drawing</summary>
-        private void handleInput(bool online)
+        private void handleInput(bool online, Player tragetPlayer = null)
         {
             if (InputHandler.isKeyDown(Key.Escape)) { statusBoard.gameIsOver = true; return; }
 
-            if (online == false)
+            if (player2.online)
+            {
+                updateJugadas(player2);
+            }
+            else
             {
                 //handel player2
                 if (InputHandler.isKeyDown(player2.keyUp)) player2.updatePos(player2.keyUp);
                 else if (InputHandler.isKeyDown(player2.keyDown)) player2.updatePos(player2.keyDown);
                 else { player2.resetMomentum(); }
             }
+
+            if(player1.online)
+            {
+                updateJugadas(player1);
+            }
             else
             {
-                updateJugadas();
+                //handel player1
+                if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
+                else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
+                else { player1.resetMomentum(); }
             }
-
-            //handel player1
-            if (InputHandler.isKeyDown(player1.keyUp)) player1.updatePos(player1.keyUp);
-            else if (InputHandler.isKeyDown(player1.keyDown)) player1.updatePos(player1.keyDown);
-            else { player1.resetMomentum(); }
-
 
             //handel debug
             if (InputHandler.isKeyDown(Key.F3))
@@ -317,8 +323,8 @@ namespace PongCliente_Sockets.MVC.Controller
             }).Start();
         }
 
-        /// <summary>Handles player1 pos and updates ball position according to the server</summary>
-        private void updateJugadas()
+        /// <summary>Handles player pos and updates ball position according to the server</summary>
+        private void updateJugadas(Player targetPlayer)
         {
             if (jugadasPendientes.Count > 0)
             {
@@ -326,9 +332,9 @@ namespace PongCliente_Sockets.MVC.Controller
                 {
                     if (j.player != null)
                     {
-                        player2.pos.y = j.player.pos.y;
-                        player2.top.y = j.player.top.y;
-                        player2.bottom.y = j.player.bottom.y;
+                        targetPlayer.pos.y = j.player.pos.y;
+                        targetPlayer.top.y = j.player.top.y;
+                        targetPlayer.bottom.y = j.player.bottom.y;
                     }
                     if (j.ball != null) ball = (Ball)j.ball.Clone();
                     if (j.statusBoard != null) statusBoard = (StatusBoard)j.statusBoard.Clone();
