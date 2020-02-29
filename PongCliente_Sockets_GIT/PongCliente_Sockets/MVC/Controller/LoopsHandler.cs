@@ -46,6 +46,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private RecieverHandler recieverHandler;
 
+        private Byte[] bytes;
+
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(List<object> gameObj)
         {
@@ -91,9 +93,17 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary> Distributes the work betwen the async tasks </summary>
         public void gameLoop(bool online)
         {
+            bytes = new Byte[512];
+
+            //serverConfigParams.tcpClient;
+            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
+            recieverHandler = new RecieverHandler(stream, bytes, statusBoard);
+
             if (online) { new Task(() => readFromHttp()).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
         }
+
+        
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
         private void handleFrameByFrame(bool online)
@@ -270,13 +280,7 @@ namespace PongCliente_Sockets.MVC.Controller
         /// <summary>Acumulates a list of movements in a list from the data passed by http</summary>
         private void readFromHttp()
         {
-            Byte[] bytes = new Byte[512];
             Jugada j = null;
-
-            //serverConfigParams.tcpClient;
-            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
-            recieverHandler = new RecieverHandler(stream, bytes, statusBoard);
-
             while (!statusBoard.gameIsOver)
             {
 

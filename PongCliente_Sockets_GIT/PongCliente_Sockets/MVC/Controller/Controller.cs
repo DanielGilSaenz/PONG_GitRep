@@ -69,6 +69,7 @@ namespace PongCliente_Sockets.MVC.Controller
                         serverConfigParams.tcpClient = tempClient;
                         // TODO Hay que configurar que player es controlado por http
                         reloadHandler(gameObj);
+                        waitForTheSignal();
 
                         // Clears the menu and draws the top and bottom walls
                         Console.Clear();
@@ -186,9 +187,10 @@ namespace PongCliente_Sockets.MVC.Controller
                     // TODO eso tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
                     if (playernumber == "p1") player1.online = true;
                     else if (playernumber == "p2") player2.online = true;
-                    else throw new Exception("The player has not been decided, error comunicating with the server");
+                    else throw new Exception("The player has not been decided, error comunicating with the server: {" + playernumber +"}");
 
                     send(stream, "OK");
+
                     matchFound = true;
                     break;
                 }
@@ -367,6 +369,15 @@ namespace PongCliente_Sockets.MVC.Controller
                 //Debug.WriteLine(msg);
                 byte[] bytes = Encoding.ASCII.GetBytes(msg);
                 stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        private void waitForTheSignal()
+        {
+            string response = null;
+            while (response != "StartGame")
+            {
+                response = recieverHandler.getMsg();
             }
         }
     }
