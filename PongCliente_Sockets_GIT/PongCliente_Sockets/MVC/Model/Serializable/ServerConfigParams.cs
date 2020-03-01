@@ -30,5 +30,7 @@ namespace PongCliente_Sockets.MVC.Model.Serializable
         public int TIMEOUT { get; set; } = 30;
 
         public TcpClient tcpClient { get; set; }
+
+        public NetworkStream clientStream { get; set; }
     }
 }

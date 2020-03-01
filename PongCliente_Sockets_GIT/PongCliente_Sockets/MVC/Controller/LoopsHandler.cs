@@ -91,19 +91,15 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
-        public void gameLoop(bool online)
+        public void gameLoop(bool online, NetworkStream stream)
         {
+            // Initializes the http objects
             bytes = new Byte[512];
-
-            //serverConfigParams.tcpClient;
-            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
             recieverHandler = new RecieverHandler(stream, bytes, statusBoard);
 
             if (online) { new Task(() => readFromHttp()).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
         }
-
-        
 
         /// <summary> Does the math to know where everybody is and then draws them</summary>
         private void handleFrameByFrame(bool online)
@@ -175,7 +171,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     // THEN DOES CALCULATIONS
                     // Updates the ball to the new coordinates
                     // Updates the players to the new coordinates
-                    handleInput(online);
+                    handleInput();
                     updateBall(online);
 
 
@@ -226,15 +222,14 @@ namespace PongCliente_Sockets.MVC.Controller
 
         }
 
-
         /// <summary> Reads the keys while the screen is not drawing</summary>
-        private void handleInput(bool online, Player tragetPlayer = null)
+        private void handleInput()
         {
             if (InputHandler.isKeyDown(Key.Escape)) { statusBoard.gameIsOver = true; return; }
 
             if (player2.online)
             {
-                updateJugadas(player2);
+                updatePosWithCurrentJugadas(player2);
             }
             else
             {
@@ -246,7 +241,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
             if(player1.online)
             {
-                updateJugadas(player1);
+                updatePosWithCurrentJugadas(player1);
             }
             else
             {
@@ -291,6 +286,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
                     if (str1 != null)
                     {
+                        Debug.Write(str1);
                         try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
                         catch (Exception e)
                         {
@@ -313,22 +309,19 @@ namespace PongCliente_Sockets.MVC.Controller
             Byte[] bytes = new Byte[512];
             Jugada j = null;
 
-            new Task(() =>
-            {
-                j = new Jugada(player1, null, null);
-                if (updateBall) j.ball = ball;
-                if (updateStatusBoard) j.statusBoard = statusBoard;
+            j = new Jugada(player1, null, null);
+            if (updateBall) j.ball = ball;
+            if (updateStatusBoard) j.statusBoard = statusBoard;
 
 
-                string msg = j.getAttr(j);
-                bytes = Encoding.ASCII.GetBytes(msg);
-                stream.Write(bytes, 0, bytes.Length);
-                bytes = new Byte[512];
-            }).Start();
+            string msg = j.getAttr(j);
+            bytes = Encoding.ASCII.GetBytes(msg);
+            stream.Write(bytes, 0, bytes.Length);
+            bytes = new Byte[512];
         }
 
         /// <summary>Handles player pos and updates ball position according to the server</summary>
-        private void updateJugadas(Player targetPlayer)
+        private void updatePosWithCurrentJugadas(Player targetPlayer)
         {
             if (jugadasPendientes.Count > 0)
             {

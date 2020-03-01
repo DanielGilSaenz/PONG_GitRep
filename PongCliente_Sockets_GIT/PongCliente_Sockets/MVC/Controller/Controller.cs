@@ -67,7 +67,10 @@ namespace PongCliente_Sockets.MVC.Controller
                     else if(tempClient != null)
                     {
                         serverConfigParams.tcpClient = tempClient;
-                        // TODO Hay que configurar que player es controlado por http
+                        // TODO hay que cambiar el stream http para que se pase por referencia desde el controller porque los OK llegan pero los objetos no
+                        // TODO también puede ser que los objetos no se envíen por otra razón por el camnio
+
+
                         reloadHandler(gameObj);
                         waitForTheSignal();
 
