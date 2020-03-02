@@ -60,17 +60,17 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
                     TcpClient tempClient;
-                    if (!connectToServer(out tempClient))
+                    NetworkStream stream;
+                    if (!connectToServer(out stream, out tempClient))
                     {
                         goto begining;
                     }
-                    else if(tempClient != null)
+                    else if (tempClient != null)
                     {
                         serverConfigParams.tcpClient = tempClient;
+                        serverConfigParams.clientStream = stream;
                         // TODO hay que cambiar el stream http para que se pase por referencia desde el controller porque los OK llegan pero los objetos no
                         // TODO también puede ser que los objetos no se envíen por otra razón por el camnio
-
-
                         reloadHandler(gameObj);
                         waitForTheSignal();
 
@@ -117,7 +117,7 @@ namespace PongCliente_Sockets.MVC.Controller
             else if (selected == 2) { statusBoard.gameIsOver = true; return; }
         }
 
-        private bool connectToServer(out TcpClient client)
+        private bool connectToServer(out NetworkStream stream, out TcpClient client)
         {
             MenuObj waitingMenu = new MenuObj(new string[] { "Waiting to connect to the server", "", "~" }, null, false);
             waitingMenu.selectedOption = 5;
@@ -130,22 +130,25 @@ namespace PongCliente_Sockets.MVC.Controller
             int i = 0;
             screenHandler.drawMenu(waitingMenu);
 
+
             Int32 port = serverConfigParams.PORT;
             try { client = new TcpClient(serverConfigParams.IP, port); }
-            catch(ArgumentNullException)
+            catch (ArgumentNullException)
             {
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
+                stream = null;
                 return false;
             }
-            catch(ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException)
             {
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
+                stream = null;
                 return false;
             }
             catch (SocketException)
@@ -154,13 +157,14 @@ namespace PongCliente_Sockets.MVC.Controller
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
+                stream = null;
                 return false;
             }
             waitingMenu.Options[0] = "Waiting to find a match";
-            NetworkStream stream = client.GetStream();
+            stream = client.GetStream();
             Byte[] data = new Byte[256];
 
-            recieverHandler = new RecieverHandler(stream, data, statusBoard);
+            recieverHandler = new RecieverHandler(stream, data);
             string msg;
 
             bool matchFound = false;
@@ -171,7 +175,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 {
                     waitingMenu.Options[0] = "Error the server has disconnected";
                     screenHandler.drawMenu(waitingMenu);
-                    while(Console.ReadKey().Key != ConsoleKey.Enter);
+                    while (Console.ReadKey().Key != ConsoleKey.Enter) ;
                     matchFound = false;
                     break;
                 }
@@ -187,14 +191,15 @@ namespace PongCliente_Sockets.MVC.Controller
                         playernumber = recieverHandler.getMsg();
                     }
 
-                    // TODO eso tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
+                    // TODO esto tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
                     if (playernumber == "p1") player1.online = true;
                     else if (playernumber == "p2") player2.online = true;
-                    else throw new Exception("The player has not been decided, error comunicating with the server: {" + playernumber +"}");
+                    else throw new Exception("The player has not been decided, error comunicating with the server: {" + playernumber + "}");
 
                     send(stream, "OK");
 
                     matchFound = true;
+                    recieverHandler.stop = true;
                     break;
                 }
 

@@ -16,12 +16,11 @@ namespace PongServidor_Sockets.Controller
 
         private bool error = false;
 
-        private StatusBoard statusBoard;
+        public bool stop = false;
 
-        public RecieverHandler(NetworkStream stream, Byte[] bytes, StatusBoard statusBoard)
+        public RecieverHandler(NetworkStream stream, Byte[] bytes)
         {
             startReading(stream, bytes);
-            this.statusBoard = statusBoard;
         }
 
         public string getMsg()
@@ -50,7 +49,7 @@ namespace PongServidor_Sockets.Controller
 
             new Task(() =>
             {
-                while (!statusBoard.gameIsOver)
+                while (!stop)
                 {
                     try
                     {

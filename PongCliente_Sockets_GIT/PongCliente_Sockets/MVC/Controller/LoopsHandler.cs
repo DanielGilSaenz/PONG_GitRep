@@ -91,11 +91,11 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary> Distributes the work betwen the async tasks </summary>
-        public void gameLoop(bool online, NetworkStream stream)
+        public void gameLoop(bool online)
         {
             // Initializes the http objects
             bytes = new Byte[512];
-            recieverHandler = new RecieverHandler(stream, bytes, statusBoard);
+            recieverHandler = new RecieverHandler(serverConfigParams.clientStream, bytes);
 
             if (online) { new Task(() => readFromHttp()).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
@@ -122,101 +122,93 @@ namespace PongCliente_Sockets.MVC.Controller
             stopWatch.Start();
             while (statusBoard.gameIsOver == false)
             {
-                try
+
+                // Locks the other theads
+                Locks.DRAWING = true;
+
+                // Draws the objects if there has been any change
+                if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
+                if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
+                if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
+                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
+
+                // debug purposes
+                if (debugOn)
                 {
-                    // Locks the other theads
-                    Locks.DRAWING = true;
+                    if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
+                    if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
+                    if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
 
-                    // Draws the objects if there has been any change
-                    if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
-                    if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
-                    if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
-                    if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
+                    screenHandler.drawDebug(player1, 0, 0);
+                    screenHandler.drawDebug(player1, 0, 0);
 
-                    // debug purposes
-                    if (debugOn)
+                    screenHandler.drawDebug(player2, 0, 1);
+                    screenHandler.drawDebug(player2, 0, 1);
+
+                    screenHandler.drawDebug(ball, 0, 2);
+                    screenHandler.drawDebug(ball, 0, 2);
+
+                    int i = 3;
+                    foreach (Jugada j in jugadasPendientes)
                     {
-
-
-                        if (!player1.Compare(lastPlayer1)) screenHandler.drawDebug(player1, 0, 0);
-                        if (!player2.Compare(lastPlayer2)) screenHandler.drawDebug(player2, 0, 1);
-                        if (!ball.Compare(lastBall)) screenHandler.drawDebug(ball, 0, 2);
-
-                        screenHandler.drawDebug(player1, 0, 0);
-                        screenHandler.drawDebug(player1, 0, 0);
-
-                        screenHandler.drawDebug(player2, 0, 1);
-                        screenHandler.drawDebug(player2, 0, 1);
-
-                        screenHandler.drawDebug(ball, 0, 2);
-                        screenHandler.drawDebug(ball, 0, 2);
-
-                        int i = 3;
-                        foreach (Jugada j in jugadasPendientes)
-                        {
-                            screenHandler.drawDebug(j, 0, i);
-                            screenHandler.drawDebug(j, 0, i);
-                            i++;
-                        }
-
+                        screenHandler.drawDebug(j, 0, i);
+                        screenHandler.drawDebug(j, 0, i);
+                        i++;
                     }
-
-                    // Keeps a register of the objects to erase later
-                    lastBall = (Ball)ball.Clone();
-                    lastPlayer1 = (Player)player1.Clone();
-                    lastPlayer2 = (Player)player2.Clone();
-                    lastBoard = (StatusBoard)statusBoard.Clone();
-
-
-                    // THEN DOES CALCULATIONS
-                    // Updates the ball to the new coordinates
-                    // Updates the players to the new coordinates
-                    handleInput();
-                    updateBall(online);
-
-
-                    // Unlocks the other theads
-                    Locks.DRAWING = false;
-                    stopWatch.Stop();
-
-                    // Wait Till the next frame
-                    delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
-                    if (delay.Milliseconds > 0) Thread.Sleep(delay);
-                    frameRate.actualFrame++;
-                    //Thread.Sleep(100);
-
-                    // To reset the actual frame if it is over the max FPS
-                    if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
-                    stopWatch.Reset();
-
-                    // locks the other theads
-                    Locks.DRAWING = true;
-
-                    // Waits for the other theads to stop doing things
-                    while (Locks.READING) ;
-                    while (Locks.NETWORKING) ;
-                    stopWatch.Start();
-
-
-                    // Erases the previous objects if there are any change
-                    if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
-                    if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
-                    if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
-                    if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
-
-                    if (online)
-                    {
-                        if (!player1.Compare(lastPlayer1))
-                        {
-                            sendJugada(false, false);
-                        }
-                    }
-
                 }
 
-                catch (Exception ex)
+                // Keeps a register of the objects to erase later
+                lastBall = (Ball)ball.Clone();
+                lastPlayer1 = (Player)player1.Clone();
+                lastPlayer2 = (Player)player2.Clone();
+                lastBoard = (StatusBoard)statusBoard.Clone();
+
+
+                // THEN DOES CALCULATIONS
+                // Updates the ball to the new coordinates
+                // Updates the players to the new coordinates
+                handleInput();
+                updateBall(online);
+
+                send(serverConfigParams.clientStream, "FRAME");
+                Debug.WriteLine("FRAME");
+
+
+                // Unlocks the other theads
+                Locks.DRAWING = false;
+                stopWatch.Stop();
+
+                // Wait Till the next frame
+                delay = frameRate.delayTillNextFrame - stopWatch.Elapsed;
+                if (delay.Milliseconds > 0) Thread.Sleep(delay);
+                frameRate.actualFrame++;
+                //Thread.Sleep(100);
+
+                // To reset the actual frame if it is over the max FPS
+                if (frameRate.actualFrame >= frameRate.FPS) frameRate.actualFrame = 1;
+                stopWatch.Reset();
+
+                // locks the other theads
+                Locks.DRAWING = true;
+
+                // Waits for the other theads to stop doing things
+                while (Locks.READING) ;
+                while (Locks.NETWORKING) ;
+                stopWatch.Start();
+
+
+                // Erases the previous objects if there are any change
+                if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
+                if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
+                if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
+                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
+
+                if (online)
                 {
-                    Debug.WriteLine(ex.ToString());
+                    if (!player1.Compare(lastPlayer1))
+                    {
+                        sendJugada(false, false);
+                    }
                 }
             }
 
@@ -239,7 +231,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 else { player2.resetMomentum(); }
             }
 
-            if(player1.online)
+            if (player1.online)
             {
                 updatePosWithCurrentJugadas(player1);
             }
@@ -278,7 +270,6 @@ namespace PongCliente_Sockets.MVC.Controller
             Jugada j = null;
             while (!statusBoard.gameIsOver)
             {
-
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
@@ -298,6 +289,17 @@ namespace PongCliente_Sockets.MVC.Controller
                     bytes = new Byte[512];
                     Locks.NETWORKING = false;
                 }
+            }
+        }
+
+        /// <summary>http method If the msg is not null, tries to send it</summary>
+        private static void send(NetworkStream stream, string msg)
+        {
+            if (!string.IsNullOrEmpty(msg))
+            {
+                //Debug.WriteLine(msg);
+                byte[] bytes = Encoding.ASCII.GetBytes(msg);
+                stream.Write(bytes, 0, bytes.Length);
             }
         }
 
