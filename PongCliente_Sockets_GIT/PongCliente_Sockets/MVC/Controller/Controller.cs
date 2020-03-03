@@ -34,9 +34,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
         public ServerConfigParams serverConfigParams;
 
-        private RecieverHandler recieverHandler;
-
         private List<object> gameObj;
+        private const int BYTES_NUM = 512;
 
         public Controller()
         {
@@ -59,20 +58,18 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-                    TcpClient tempClient;
                     NetworkStream stream;
-                    if (!connectToServer(out stream, out tempClient))
+                    if (!connectToServer(serverConfigParams.tcpClient))
                     {
                         goto begining;
                     }
-                    else if (tempClient != null)
+                    else if (serverConfigParams.tcpClient != null)
                     {
-                        serverConfigParams.tcpClient = tempClient;
-                        serverConfigParams.clientStream = stream;
+                        //serverConfigParams.clientStream = stream;
                         // TODO hay que cambiar el stream http para que se pase por referencia desde el controller porque los OK llegan pero los objetos no
                         // TODO también puede ser que los objetos no se envíen por otra razón por el camnio
                         reloadHandler(gameObj);
-                        waitForTheSignal();
+                        waitForTheSignal(serverConfigParams.tcpClient.GetStream());
 
                         // Clears the menu and draws the top and bottom walls
                         Console.Clear();
@@ -117,7 +114,7 @@ namespace PongCliente_Sockets.MVC.Controller
             else if (selected == 2) { statusBoard.gameIsOver = true; return; }
         }
 
-        private bool connectToServer(out NetworkStream stream, out TcpClient client)
+        private bool connectToServer(TcpClient client)
         {
             MenuObj waitingMenu = new MenuObj(new string[] { "Waiting to connect to the server", "", "~" }, null, false);
             waitingMenu.selectedOption = 5;
@@ -139,7 +136,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
-                stream = null;
                 return false;
             }
             catch (ArgumentOutOfRangeException)
@@ -148,7 +144,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
-                stream = null;
                 return false;
             }
             catch (SocketException)
@@ -157,30 +152,29 @@ namespace PongCliente_Sockets.MVC.Controller
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
                 client = null;
-                stream = null;
                 return false;
             }
             waitingMenu.Options[0] = "Waiting to find a match";
-            stream = client.GetStream();
+            NetworkStream stream = client.GetStream();
             Byte[] data = new Byte[256];
 
-            recieverHandler = new RecieverHandler(stream, data);
+            
             string msg;
 
             bool matchFound = false;
             int seconds = 0;
             while (!matchFound)
             {
-                if (recieverHandler.isSomethingWrong())
-                {
-                    waitingMenu.Options[0] = "Error the server has disconnected";
-                    screenHandler.drawMenu(waitingMenu);
-                    while (Console.ReadKey().Key != ConsoleKey.Enter) ;
-                    matchFound = false;
-                    break;
-                }
+                //if (recieverHandler.isSomethingWrong())
+                //{
+                //    waitingMenu.Options[0] = "Error the server has disconnected";
+                //    screenHandler.drawMenu(waitingMenu);
+                //    while (Console.ReadKey().Key != ConsoleKey.Enter) ;
+                //    matchFound = false;
+                //    break;
+                //}
 
-                msg = recieverHandler.getMsg();
+                msg = read(stream, 100);
 
                 if (msg == "MatchFound")
                 {
@@ -188,7 +182,7 @@ namespace PongCliente_Sockets.MVC.Controller
                     string playernumber = null;
                     while (playernumber == null)
                     {
-                        playernumber = recieverHandler.getMsg();
+                        playernumber = read(stream, 100);
                     }
 
                     // TODO esto tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
@@ -199,7 +193,6 @@ namespace PongCliente_Sockets.MVC.Controller
                     send(stream, "OK");
 
                     matchFound = true;
-                    recieverHandler.stop = true;
                     break;
                 }
 
@@ -319,6 +312,16 @@ namespace PongCliente_Sockets.MVC.Controller
             reloadHandler(gameObj);
         }
 
+        private string read(NetworkStream stream, int timeout)
+        {
+            Byte[] bytes = new Byte[BYTES_NUM];
+            stream.ReadTimeout = timeout;
+            int count = stream.Read(bytes, 0, bytes.Length);
+            string response = Encoding.ASCII.GetString(bytes, 0, count);
+            if (response != null) Console.WriteLine("[R]" + response);
+            return response;
+        }
+
         /// <summary>Allows the user to change the mode betwen online and offline</summary>
         private void menu_changeMode()
         {
@@ -380,12 +383,12 @@ namespace PongCliente_Sockets.MVC.Controller
             }
         }
 
-        private void waitForTheSignal()
+        private void waitForTheSignal(NetworkStream stream)
         {
             string response = null;
             while (response != "StartGame")
             {
-                response = recieverHandler.getMsg();
+                response = read(stream, 100);
             }
         }
     }

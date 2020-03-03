@@ -51,15 +51,8 @@ namespace PongServidor_Sockets.Controller
             {
                 while (!stop)
                 {
-                    try
-                    {
                         count = stream.Read(bytes, 0, bytes.Length);
                         msg = Encoding.ASCII.GetString(bytes, 0, count);
-                    }
-                    catch(System.IO.IOException)
-                    {
-                        error = true;
-                    }
                     
                 }
             }).Start();

@@ -44,9 +44,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private ServerConfigParams serverConfigParams;
 
-        private RecieverHandler recieverHandler;
-
         private Byte[] bytes;
+        private const int BYTES_NUM = 512;
 
         // I have to pass a List<object> by reference with all the objects used in this class and then try cast every one
         public LoopsHandler(List<object> gameObj)
@@ -95,9 +94,9 @@ namespace PongCliente_Sockets.MVC.Controller
         {
             // Initializes the http objects
             bytes = new Byte[512];
-            recieverHandler = new RecieverHandler(serverConfigParams.clientStream, bytes);
+            //recieverHandler = new RecieverHandler(serverConfigParams.clientStream, bytes);
 
-            if (online) { new Task(() => readFromHttp()).Start(); }
+            if (online) { new Task(() => readFromHttp(100)).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
         }
 
@@ -170,8 +169,8 @@ namespace PongCliente_Sockets.MVC.Controller
                 handleInput();
                 updateBall(online);
 
-                send(serverConfigParams.clientStream, "FRAME");
-                Debug.WriteLine("FRAME");
+                send(serverConfigParams.tcpClient.GetStream(), "FRAME");
+                //Debug.WriteLine("FRAME");
 
 
                 // Unlocks the other theads
@@ -265,7 +264,7 @@ namespace PongCliente_Sockets.MVC.Controller
         }
 
         /// <summary>Acumulates a list of movements in a list from the data passed by http</summary>
-        private void readFromHttp()
+        private void readFromHttp(int timeout)
         {
             Jugada j = null;
             while (!statusBoard.gameIsOver)
@@ -273,16 +272,16 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
-                    string str1 = recieverHandler.getMsg();
+                    string str1 = "";//read(serverConfigParams.clientStream, 100);
 
                     if (str1 != null)
                     {
                         Debug.Write(str1);
-                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
-                        catch (Exception e)
-                        {
-                            Debug.WriteLine(str1 + ":" + e.Message);
-                        }
+                        //try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
+                        //catch (Exception e)
+                        //{
+                        //    Debug.WriteLine(str1 + ":" + e.Message);
+                        //}
                         if (j != null) jugadasPendientes.Add(j);
                     }
 
@@ -292,8 +291,18 @@ namespace PongCliente_Sockets.MVC.Controller
             }
         }
 
+        private string read(NetworkStream stream, int timeout)
+        {
+            Byte[] bytes = new Byte[BYTES_NUM];
+            stream.ReadTimeout = timeout;
+            int count = stream.Read(bytes, 0, bytes.Length);
+            string response = Encoding.ASCII.GetString(bytes, 0, count);
+            if (response != null) Console.WriteLine("[R]" + response);
+            return response;
+        }
+
         /// <summary>http method If the msg is not null, tries to send it</summary>
-        private static void send(NetworkStream stream, string msg)
+        private void send(NetworkStream stream, string msg)
         {
             if (!string.IsNullOrEmpty(msg))
             {
