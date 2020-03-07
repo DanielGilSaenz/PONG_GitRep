@@ -69,7 +69,7 @@ namespace PongCliente_Sockets.MVC.Controller
                         // TODO hay que cambiar el stream http para que se pase por referencia desde el controller porque los OK llegan pero los objetos no
                         // TODO también puede ser que los objetos no se envíen por otra razón por el camnio
                         reloadHandler(gameObj);
-                        waitForTheSignal(serverConfigParams.tcpClient.GetStream());
+                        
 
                         // Clears the menu and draws the top and bottom walls
                         Console.Clear();
@@ -185,6 +185,9 @@ namespace PongCliente_Sockets.MVC.Controller
                     {
                         msg = read(stream, 100);
                     } while ((msg != "StartGame"));
+                    send(stream, "OK");
+
+                    msg = null;
 
                     serverConfigParams.tcpClient = client;
                     matchFound = true;
@@ -383,15 +386,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 //Debug.WriteLine(msg);
                 byte[] bytes = Encoding.ASCII.GetBytes(msg);
                 stream.Write(bytes, 0, bytes.Length);
-            }
-        }
-
-        private void waitForTheSignal(NetworkStream stream)
-        {
-            string response = null;
-            while (response != "StartGame")
-            {
-                response = read(stream, 100);
             }
         }
     }
