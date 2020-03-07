@@ -165,33 +165,28 @@ namespace PongCliente_Sockets.MVC.Controller
             int seconds = 0;
             while (!matchFound)
             {
-                //if (recieverHandler.isSomethingWrong())
-                //{
-                //    waitingMenu.Options[0] = "Error the server has disconnected";
-                //    screenHandler.drawMenu(waitingMenu);
-                //    while (Console.ReadKey().Key != ConsoleKey.Enter) ;
-                //    matchFound = false;
-                //    break;
-                //}
-
                 msg = read(stream, 100);
 
                 if (msg == "MatchFound")
                 {
                     send(stream, "OK");
-                    string playernumber = null;
-                    while (playernumber == null)
+                    msg = null;
+                    do
                     {
-                        playernumber = read(stream, 100);
-                    }
+                        msg = read(stream, 100);
+                    } while ((msg != "p1") && (msg != "p2"));
 
-                    // TODO esto tiene que estar controlado para que se reintente, y si no que se paren los dos clientes
-                    if (playernumber == "p1") player1.online = true;
-                    else if (playernumber == "p2") player2.online = true;
-                    else throw new Exception("The player has not been decided, error comunicating with the server: {" + playernumber + "}");
-
+                    if (msg == "p1") player1.online = true;
+                    else if (msg == "p2") player2.online = true;
                     send(stream, "OK");
 
+                    msg = null;
+                    do
+                    {
+                        msg = read(stream, 100);
+                    } while ((msg != "StartGame"));
+
+                    serverConfigParams.tcpClient = client;
                     matchFound = true;
                     break;
                 }
@@ -314,12 +309,20 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private string read(NetworkStream stream, int timeout)
         {
-            Byte[] bytes = new Byte[BYTES_NUM];
-            stream.ReadTimeout = timeout;
-            int count = stream.Read(bytes, 0, bytes.Length);
-            string response = Encoding.ASCII.GetString(bytes, 0, count);
-            if (response != null) Console.WriteLine("[R]" + response);
-            return response;
+            try
+            {
+                Byte[] bytes = new Byte[BYTES_NUM];
+                stream.ReadTimeout = timeout;
+                int count = stream.Read(bytes, 0, bytes.Length);
+                string response = Encoding.ASCII.GetString(bytes, 0, count);
+                //if (response != null) Console.WriteLine("[R]" + response);
+                return response;
+            }
+            catch
+            {
+                return null;
+            }
+            
         }
 
         /// <summary>Allows the user to change the mode betwen online and offline</summary>

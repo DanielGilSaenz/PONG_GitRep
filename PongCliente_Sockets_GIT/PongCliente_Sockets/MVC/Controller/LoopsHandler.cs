@@ -44,6 +44,8 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private ServerConfigParams serverConfigParams;
 
+        private NetworkStream globalStream;
+
         private Byte[] bytes;
         private const int BYTES_NUM = 512;
 
@@ -66,6 +68,8 @@ namespace PongCliente_Sockets.MVC.Controller
             statusBoard = (StatusBoard)gameObj[9];
 
             serverConfigParams = (ServerConfigParams)gameObj[10];
+
+            if(serverConfigParams.tcpClient != null) globalStream = serverConfigParams.tcpClient.GetStream();
         }
 
         public LoopsHandler()
@@ -169,7 +173,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 handleInput();
                 updateBall(online);
 
-                send(serverConfigParams.tcpClient.GetStream(), "FRAME");
+                send(globalStream, "FRAME");
                 //Debug.WriteLine("FRAME");
 
 
@@ -201,14 +205,6 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
                 if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
                 if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
-
-                if (online)
-                {
-                    if (!player1.Compare(lastPlayer1))
-                    {
-                        sendJugada(false, false);
-                    }
-                }
             }
 
         }
@@ -312,25 +308,6 @@ namespace PongCliente_Sockets.MVC.Controller
             }
         }
 
-        /// <summary>Sends the current status of the objects to the server</summary>
-        private void sendJugada(bool updateBall, bool updateStatusBoard)
-        {
-            NetworkStream stream = serverConfigParams.tcpClient.GetStream();
-
-            Byte[] bytes = new Byte[512];
-            Jugada j = null;
-
-            j = new Jugada(player1, null, null);
-            if (updateBall) j.ball = ball;
-            if (updateStatusBoard) j.statusBoard = statusBoard;
-
-
-            string msg = j.getAttr(j);
-            bytes = Encoding.ASCII.GetBytes(msg);
-            stream.Write(bytes, 0, bytes.Length);
-            bytes = new Byte[512];
-        }
-
         /// <summary>Handles player pos and updates ball position according to the server</summary>
         private void updatePosWithCurrentJugadas(Player targetPlayer)
         {
@@ -370,11 +347,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (HitboxHandler.handleHit(ref ball, ref topWall)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player1)) break;
                 if (HitboxHandler.handleHit(ref ball, ref player2)) break;
-                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard))
-                {
-                    if (online) sendJugada(true, true);
-                    break;
-                }
+                if (HitboxHandler.handleGoal(ref ball, ref player1, ref player2, ref topWall, ref bottomWall, ref statusBoard)) break;
             }
         }
 
