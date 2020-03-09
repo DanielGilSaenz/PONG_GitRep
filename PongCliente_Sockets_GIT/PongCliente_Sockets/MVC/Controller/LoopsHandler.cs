@@ -1,21 +1,17 @@
 ﻿using PongCliente_Sockets.Async;
 using PongCliente_Sockets.Menus;
-using PongCliente_Sockets.MVC.Controller;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using PongCliente_Sockets.MVC.Model.Serializable;
 using PongCliente_Sockets.MVC.View;
-using PongServidor_Sockets.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace PongCliente_Sockets.MVC.Controller
 {
@@ -42,10 +38,6 @@ namespace PongCliente_Sockets.MVC.Controller
         private Ball ball;
         private StatusBoard statusBoard;
 
-        private ServerConfigParams serverConfigParams;
-
-        private NetworkStream globalStream;
-
         private Byte[] bytes;
         private const int BYTES_NUM = 512;
 
@@ -66,10 +58,6 @@ namespace PongCliente_Sockets.MVC.Controller
 
             ball = (Ball)gameObj[8];
             statusBoard = (StatusBoard)gameObj[9];
-
-            serverConfigParams = (ServerConfigParams)gameObj[10];
-
-            if(serverConfigParams.tcpClient != null) globalStream = serverConfigParams.tcpClient.GetStream();
         }
 
         public LoopsHandler()
@@ -131,8 +119,16 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 // Draws the objects if there has been any change
                 if (!ball.Compare(lastBall)) drawBall(ref ball, ref screenHandler, false);
-                if (!player1.Compare(lastPlayer1)) drawPlayer(ref player1, ref screenHandler, false);
-                if (!player2.Compare(lastPlayer2)) drawPlayer(ref player2, ref screenHandler, false);
+                if (!player1.Compare(lastPlayer1))
+                {
+                    drawPlayer(ref player1, ref screenHandler, false);
+                    if(!player1.online) send(Controller.serverConfigParams.stream, new Jugada().getAttr(new Jugada(player1, null, null)));
+                }
+                if (!player2.Compare(lastPlayer2))
+                {
+                    drawPlayer(ref player2, ref screenHandler, false);
+                    if (!player2.online) send(Controller.serverConfigParams.stream, new Jugada().getAttr(new Jugada(player2, null, null)));
+                }
                 if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref statusBoard, ref screenHandler, false);
 
                 // debug purposes
@@ -173,7 +169,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 handleInput();
                 updateBall(online);
 
-                send(globalStream, "FRAME");
+                //send(Controller.serverConfigParams.stream, "FRAME");
                 //Debug.WriteLine("FRAME");
 
 
@@ -204,7 +200,11 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!ball.Compare(lastBall)) drawBall(ref lastBall, ref screenHandler, true);
                 if (!player1.Compare(lastPlayer1)) drawPlayer(ref lastPlayer1, ref screenHandler, true);
                 if (!player2.Compare(lastPlayer2)) drawPlayer(ref lastPlayer2, ref screenHandler, true);
-                if (!statusBoard.Compare(lastBoard)) drawScoreboard(ref lastBoard, ref screenHandler, true);
+                if (!statusBoard.Compare(lastBoard))
+                {
+                    drawScoreboard(ref lastBoard, ref screenHandler, true);
+                    send(Controller.serverConfigParams.stream, new Jugada().getAttr(new Jugada(player1, ball, statusBoard)));
+                }
             }
 
         }
@@ -268,7 +268,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 if (!Locks.DRAWING)
                 {
                     Locks.NETWORKING = true;
-                    string str1 = "";//read(serverConfigParams.clientStream, 100);
+                    string str1 = read(Controller.serverConfigParams.stream, 100);
 
                     if (str1 != null)
                     {
@@ -289,12 +289,19 @@ namespace PongCliente_Sockets.MVC.Controller
 
         private string read(NetworkStream stream, int timeout)
         {
-            Byte[] bytes = new Byte[BYTES_NUM];
-            stream.ReadTimeout = timeout;
-            int count = stream.Read(bytes, 0, bytes.Length);
-            string response = Encoding.ASCII.GetString(bytes, 0, count);
-            if (response != null) Console.WriteLine("[R]" + response);
-            return response;
+            try
+            {
+                Byte[] bytes = new Byte[BYTES_NUM];
+                stream.ReadTimeout = timeout;
+                int count = stream.Read(bytes, 0, bytes.Length);
+                string response = Encoding.ASCII.GetString(bytes, 0, count);
+                return response;
+            }
+            catch
+            {
+                return null;
+            }
+            
         }
 
         /// <summary>http method If the msg is not null, tries to send it</summary>

@@ -3,15 +3,12 @@ using PongCliente_Sockets.Menus;
 using PongCliente_Sockets.MVC.Model.Math_Objects;
 using PongCliente_Sockets.MVC.Model.Serializable;
 using PongCliente_Sockets.MVC.View;
-using PongServidor_Sockets.Controller;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace PongCliente_Sockets.MVC.Controller
@@ -32,7 +29,7 @@ namespace PongCliente_Sockets.MVC.Controller
         public Ball ball;
         public StatusBoard statusBoard;
 
-        public ServerConfigParams serverConfigParams;
+        public static ServerConfigParams serverConfigParams;
 
         private List<object> gameObj;
         private const int BYTES_NUM = 512;
@@ -58,8 +55,7 @@ namespace PongCliente_Sockets.MVC.Controller
 
                 if (serverConfigParams.mode == ServerConfigParams.Mode.ONLINE)
                 {
-                    NetworkStream stream;
-                    if (!connectToServer(serverConfigParams.tcpClient))
+                    if (!connectToServer())
                     {
                         goto begining;
                     }
@@ -114,7 +110,7 @@ namespace PongCliente_Sockets.MVC.Controller
             else if (selected == 2) { statusBoard.gameIsOver = true; return; }
         }
 
-        private bool connectToServer(TcpClient client)
+        private bool connectToServer()
         {
             MenuObj waitingMenu = new MenuObj(new string[] { "Waiting to connect to the server", "", "~" }, null, false);
             waitingMenu.selectedOption = 5;
@@ -129,13 +125,13 @@ namespace PongCliente_Sockets.MVC.Controller
 
 
             Int32 port = serverConfigParams.PORT;
-            try { client = new TcpClient(serverConfigParams.IP, port); }
+            try { serverConfigParams.tcpClient = new TcpClient(serverConfigParams.IP, port); }
             catch (ArgumentNullException)
             {
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
-                client = null;
+                serverConfigParams.tcpClient = null;
                 return false;
             }
             catch (ArgumentOutOfRangeException)
@@ -143,7 +139,7 @@ namespace PongCliente_Sockets.MVC.Controller
                 waitingMenu.Options[0] = "Error on the IP, change it and try again";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
-                client = null;
+                serverConfigParams.tcpClient = null;
                 return false;
             }
             catch (SocketException)
@@ -151,11 +147,11 @@ namespace PongCliente_Sockets.MVC.Controller
                 waitingMenu.Options[0] = "Error on the server, try again later";
                 screenHandler.drawMenu(waitingMenu);
                 Console.ReadKey(true);
-                client = null;
+                serverConfigParams.tcpClient = null;
                 return false;
             }
             waitingMenu.Options[0] = "Waiting to find a match";
-            NetworkStream stream = client.GetStream();
+            serverConfigParams.stream = serverConfigParams.tcpClient.GetStream();
             Byte[] data = new Byte[256];
 
             
@@ -165,31 +161,30 @@ namespace PongCliente_Sockets.MVC.Controller
             int seconds = 0;
             while (!matchFound)
             {
-                msg = read(stream, 100);
+                msg = read(serverConfigParams.stream, 100);
 
                 if (msg == "MatchFound")
                 {
-                    send(stream, "OK");
+                    send(serverConfigParams.stream, "OK");
                     msg = null;
                     do
                     {
-                        msg = read(stream, 100);
+                        msg = read(serverConfigParams.stream, 100);
                     } while ((msg != "p1") && (msg != "p2"));
 
                     if (msg == "p1") player1.online = true;
                     else if (msg == "p2") player2.online = true;
-                    send(stream, "OK");
+                    send(serverConfigParams.stream, "OK");
 
                     msg = null;
                     do
                     {
-                        msg = read(stream, 100);
+                        msg = read(serverConfigParams.stream, 100);
                     } while ((msg != "StartGame"));
-                    send(stream, "OK");
+                    send(serverConfigParams.stream, "OK");
 
                     msg = null;
 
-                    serverConfigParams.tcpClient = client;
                     matchFound = true;
                     break;
                 }
