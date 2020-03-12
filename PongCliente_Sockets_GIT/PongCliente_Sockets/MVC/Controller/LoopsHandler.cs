@@ -88,7 +88,7 @@ namespace PongCliente_Sockets.MVC.Controller
             bytes = new Byte[512];
             //recieverHandler = new RecieverHandler(serverConfigParams.clientStream, bytes);
 
-            if (online) { new Task(() => readFromHttp(100)).Start(); }
+            if (online) { new Task(() => readFromHttp(10)).Start(); }
             new Task(() => handleFrameByFrame(online)).Start();
         }
 
@@ -267,22 +267,19 @@ namespace PongCliente_Sockets.MVC.Controller
             {
                 if (!Locks.DRAWING)
                 {
-                    Locks.NETWORKING = true;
-                    string str1 = read(Controller.serverConfigParams.stream, 100);
+                    string str1 = read(Controller.serverConfigParams.stream, timeout);
 
                     if (str1 != null)
                     {
                         Debug.Write(str1);
-                        //try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
-                        //catch (Exception e)
-                        //{
-                        //    Debug.WriteLine(str1 + ":" + e.Message);
-                        //}
+                        try { j = (Jugada)JsonSerializer.Deserialize(str1, typeof(Jugada)); }
+                        catch (Exception e)
+                        {
+                            //Debug.WriteLine(str1 + ":" + e.Message);
+                        }
                         if (j != null) jugadasPendientes.Add(j);
                     }
-
                     bytes = new Byte[512];
-                    Locks.NETWORKING = false;
                 }
             }
         }
